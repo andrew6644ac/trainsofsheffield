@@ -14,7 +14,12 @@ public class User {
         private UserRole role;
         private List<Order> orders;
 
-    public User(Integer userID, String email, String password, String forename, String surname, List<Order> orders) {
+    public User(Integer userID,
+                String email,
+                String password,
+                String forename,
+                String surname,
+                List<Order> orders) {
         this.userID = userID;
         this.email = email;
         this.password = password;

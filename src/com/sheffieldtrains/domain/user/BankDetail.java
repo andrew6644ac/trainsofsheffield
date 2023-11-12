@@ -10,7 +10,11 @@ public class BankDetail {
     private int securityCode;
 
 
-    public BankDetail(String bankCardName, String cardHolderName, int bankCardNumber, Date cardExpiryDate, int securityCode) {
+    public BankDetail(String bankCardName,
+                      String cardHolderName,
+                      int bankCardNumber,
+                      Date cardExpiryDate,
+                      int securityCode) {
         this.bankCardName = bankCardName;
         this.cardHolderName = cardHolderName;
         this.bankCardNumber = bankCardNumber;
