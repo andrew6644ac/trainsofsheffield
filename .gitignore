@@ -1,0 +1,39 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Compiled class files
+*.class
+
+# Maven
+target/
+
+# Gradle
+build/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# User-specific files
+Desktop.ini
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Synology DiskStation
+.@__thumb/
+@eaDir/
+/test/
