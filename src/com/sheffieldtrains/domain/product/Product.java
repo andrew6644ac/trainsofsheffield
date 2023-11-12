@@ -1,6 +1,6 @@
 package com.sheffieldtrains.domain.product;
 
-public class Product {
+public abstract class Product {
     private String productCode;
     private String brand;
     private String productName;
@@ -58,4 +58,6 @@ public class Product {
     public void setGauge(Gauge gauge) {
         this.gauge = gauge;
     }
+
+
 }

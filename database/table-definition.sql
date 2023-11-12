@@ -1,8 +1,1 @@
-#placeholder
-create Table User(
-    userId: int
-)
-
-create Table Product (
-    ...
-)
+#placeholder, create table sql statements in this file

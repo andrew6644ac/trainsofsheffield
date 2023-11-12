@@ -18,6 +18,13 @@ public class Order {
         this.orderLines.add(orderLine);
     }
 
+    public Order(Integer userId, String productCode, int quantity ,  float productPrice) {
+        this.userId = userId;
+        OrderLine orderLine= new OrderLine(productCode, quantity,  productPrice*quantity);
+        orderLine.setLineNumber(orderLineNumberCounter++);
+        this.orderLines.add(orderLine);
+    }
+
     public OrderLine getExistingOrderLine(String productCode) {
         //Todo: go through all my orderlines, to see if it already has an orderline for the productCode.
         return null;
@@ -38,6 +45,10 @@ public class Order {
             newOrderLine.setLineNumber(orderLineNumberCounter++);
             orderLines.add(newOrderLine);
         }
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
     }
 }
 

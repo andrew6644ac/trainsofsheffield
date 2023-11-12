@@ -1,1 +1,2 @@
-#place holer for data insert statements
+#place holder for data insert statements to populate all the tables with data.
+
