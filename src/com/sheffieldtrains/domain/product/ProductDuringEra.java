@@ -1,7 +1,7 @@
 package com.sheffieldtrains.domain.product;
 
 public class ProductDuringEra extends Product {
-    String eraCode;
+    protected String eraCode;
 
     public ProductDuringEra(String productCode,
                             String brand,

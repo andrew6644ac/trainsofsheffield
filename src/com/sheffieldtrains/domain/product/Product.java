@@ -1,11 +1,11 @@
 package com.sheffieldtrains.domain.product;
 
 public abstract class Product {
-    private String productCode;
-    private String brand;
-    private String productName;
-    private float price;
-    private Gauge gauge;
+    protected String productCode;
+    protected String brand;
+    protected String productName;
+    protected float price;
+    protected Gauge gauge;
 
     public Product(String productCode,
                    String brand,

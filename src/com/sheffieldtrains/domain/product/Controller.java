@@ -7,8 +7,10 @@ public class Controller extends Product{
                       String brand,
                       String productName,
                       float price,
-                      Gauge gauge) {
+                      Gauge gauge,
+                      boolean isDigital) {
         super(productCode, brand, productName, price, gauge);
+        this.isDigital = isDigital;
     }
     public boolean isDigital() {
         return isDigital;
