@@ -272,17 +272,56 @@ public class Main {
         ActionListener signUp_pressed = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //adds to database when clicked if not null
-                JLabel temp_lb = new JLabel("sign up clicked");
-                temp_lb.setBounds(450, 600, 250, 30);
-                temp_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-                temp_lb.setForeground(Color.RED);
-                signup_panel.add(temp_lb);
-                frame.repaint();
+                //gets text from text boxes
+                String email_input_su = email_tb_su.getText();
+                String password_input_su = password_tb_su.getText();
+                String forename_input = forename_tb.getText();
+                String surname_input = surname_tb.getText();
+                String postcode_input = postcode_tb.getText();
+                String houseNum_input = houseNumber_tb.getText();
+                String roadName_input = roadName_tb.getText();
+                String cityName_input = cityName_tb.getText();
+
+                //converts strings to arrays and finds lengths
+                char[] email_array = email_input_su.toCharArray();
+                int email_length = email_array.length;
+                char[] password_array = password_input_su.toCharArray();
+                int password_length = password_array.length;
+                char[] forename_array = forename_input.toCharArray();
+                int forename_length = forename_array.length;
+                char[] surname_array = surname_input.toCharArray();
+                int surname_length = surname_array.length;
+                char[] postcode_array = postcode_input.toCharArray();
+                int postcode_length = postcode_array.length;
+                char[] houseNum_array = houseNum_input.toCharArray();
+                int houseNum_length = houseNum_array.length;
+                char[] roadName_array = roadName_input.toCharArray();
+                int roadName_length = roadName_array.length;
+                char[] cityName_array = cityName_input.toCharArray();
+                int cityName_length = cityName_array.length;
+
+                //if any text box is empty adds label to say so
+                if (email_input_su.isBlank() || password_input_su.isBlank() || forename_input.isBlank()
+                        || surname_input.isBlank() || postcode_input.isBlank() || houseNum_input.isBlank()
+                        || roadName_input.isBlank() || cityName_input.isBlank()) {
+                    JLabel incorrect1_lb = new JLabel("Please ensure you have entered valid information");
+                    incorrect1_lb.setBounds(415, 550, 900, 30);
+                    incorrect1_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+                    incorrect1_lb.setForeground(Color.RED);
+                    signup_panel.add(incorrect1_lb);
+                    frame.repaint();
+                //if any text box contains more characters than it's supposed to it adds a label to say so
+                } else if (email_length > 50 || password_length > 20 || forename_length > 20 || surname_length > 20
+                        || houseNum_length > 10 || postcode_length > 20 || roadName_length > 100 || cityName_length > 100) {
+                    JLabel incorrect2_lb = new JLabel("Please ensure your information does not exceed the length limit");
+                    incorrect2_lb.setBounds(390, 600, 900, 30);
+                    incorrect2_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+                    incorrect2_lb.setForeground(Color.RED);
+                    signup_panel.add(incorrect2_lb);
+                    frame.repaint();
+                }
             }
         };
-
-
 
 
 
