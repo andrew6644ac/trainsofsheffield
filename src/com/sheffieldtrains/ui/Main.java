@@ -136,11 +136,38 @@ public class Main {
             }
         };
 
+
+
+
+
+        //adds temp label
+        JLabel temp_lb = new JLabel("selected item is: Locomotive");
+        temp_lb.setBounds(405, 150, 250, 30);
+        temp_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        menu_panel.add(temp_lb);
+
+        String[] stock_types = {"Locomotive", "Rolling Stock", "Controller", "Track", "Track Pack", "Train Set"};
+        JComboBox<String> stock_sort_CB = new JComboBox<>(stock_types);
+
+        stock_sort_CB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Get the selected item
+                String stock_selected = (String) stock_sort_CB.getSelectedItem();
+
+                temp_lb.setText("selected item is: " + stock_selected);
+                menu_panel.repaint();
+
+            }
+        });
+
+        stock_sort_CB.setBounds(900, 100, 200, 100);
+        menu_panel.add(stock_sort_CB);
+        menu_panel.repaint();
+
         //Add buttons for staff and moderator if logged in as so.
-
-
-
-
+        //Add scroll pane
+        //can update labels not delete and replace
 
 
 
