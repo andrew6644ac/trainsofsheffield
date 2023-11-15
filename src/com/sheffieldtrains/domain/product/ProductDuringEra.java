@@ -9,7 +9,7 @@ public class ProductDuringEra extends Product {
                             float price,
                             Gauge gauge,
                             String eraCode) {
-        super(productCode, brand, productName, price, gauge);
+        super(productCode, brand, productName, price, gauge, resultSet.getString("productType"));
         this.eraCode = eraCode;
     }
 

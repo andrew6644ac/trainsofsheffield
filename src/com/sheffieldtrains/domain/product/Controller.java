@@ -9,7 +9,7 @@ public class Controller extends Product{
                       float price,
                       Gauge gauge,
                       boolean isDigital) {
-        super(productCode, brand, productName, price, gauge);
+        super(productCode, brand, productName, price, gauge, resultSet.getString("productType"));
         this.isDigital = isDigital;
     }
     public boolean isDigital() {

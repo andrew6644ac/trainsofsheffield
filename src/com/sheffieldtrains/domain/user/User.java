@@ -10,8 +10,8 @@ public class User {
         private String password;
         private String forename;
         private String surname;
-
         private UserRole role;
+        private Address address;
         private List<Order> orders;
 
     public User(Integer userID,
@@ -27,6 +27,8 @@ public class User {
         this.surname = surname;
         this.orders = orders;
     }
+
+    public User() { }
 
     public Integer getUserID() {
         return userID;
@@ -82,5 +84,9 @@ public class User {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public void setAddress(Address address) {
+        this.address=address;
     }
 }

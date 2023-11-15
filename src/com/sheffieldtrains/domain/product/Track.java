@@ -6,6 +6,6 @@ public class Track extends Product{
                  String productName,
                  float price,
                  Gauge gauge) {
-        super(productCode, brand, productName, price, gauge);
+        super(productCode, brand, productName, price, gauge, resultSet.getString("productType"));
     }
 }

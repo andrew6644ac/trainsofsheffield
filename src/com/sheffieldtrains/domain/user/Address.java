@@ -13,6 +13,9 @@ public class Address {
         this.postcode = postcode;
     }
 
+    public Address() {
+    }
+
     public String getHouseNumber() {
         return houseNumber;
     }

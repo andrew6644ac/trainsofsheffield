@@ -1,11 +1,13 @@
 package com.sheffieldtrains.domain.product;
 
-public abstract class Product {
+public class Product {
+
     protected String productCode;
     protected String brand;
     protected String productName;
     protected float price;
     protected Gauge gauge;
+    protected  String productType;
 
     public Product(String productCode,
                    String brand,
@@ -17,6 +19,15 @@ public abstract class Product {
         this.productName = productName;
         this.price = price;
         this.gauge = gauge;
+    }
+
+    public Product(String productCode, int quantity, String brand, String productName, float price, Gauge gauge, String productType) {
+        this(    productCode,
+                 brand,
+                 productName,
+                 price,
+                gauge);
+        this.productType=productType;
     }
 
     public String getProductCode() {
