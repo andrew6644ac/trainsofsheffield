@@ -17,6 +17,30 @@ public class ProductService {
         System.out.println("test done");
     }
 
+    public static void restockProduct(String productCode, String productType){
+        //todo:
+    }
+
+    public static void createNewLocomotive(Locomotive locomotive){
+        //todo:
+    }
+
+    public static void createNewLocomotive(Controller controller){
+        //todo:
+    }
+
+    public static void createNewRollingStock(RollingStock rollingStock){
+        //todo:
+    }
+
+    public static void createTrack(Track track){
+        //todo:
+    }
+
+    public static void createTrackPack(TrackPack trackPack){
+        //todo:
+    }
+
     public static float getProductPrice(String productId) {
         //ToDo: to implement
         return 100;
