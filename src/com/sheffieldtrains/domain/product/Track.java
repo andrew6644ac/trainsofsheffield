@@ -5,7 +5,12 @@ public class Track extends Product{
                  String brand,
                  String productName,
                  float price,
-                 Gauge gauge) {
-        super(productCode, brand, productName, price, gauge);
+                 Gauge gauge,
+                 int quantity) {
+        super(productCode, brand, productName, price, gauge, quantity);
+    }
+
+    public Track() {
+
     }
 }

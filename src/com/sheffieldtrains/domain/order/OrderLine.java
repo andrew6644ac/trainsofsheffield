@@ -1,24 +1,31 @@
 package com.sheffieldtrains.domain.order;
 
+import com.sheffieldtrains.domain.product.Product;
+
 public class OrderLine {
     private Integer lineNumber;
-    private String productCode;
+//    private String productCode;
+
+    private Product product;
     private int quantity;
     private float price;
 
     public OrderLine(String productCode, int quantity, float price) {
-        this.productCode = productCode;
+//        this.productCode = productCode;
+       /* this.product=new Product(productCode, null, null, price, null, null);*/
         this.quantity = quantity;
         this.price = price;
     }
 
+    public OrderLine() {}
 
     public int getLineNumber() {
         return lineNumber;
     }
 
     public String getProductCode() {
-        return productCode;
+//        return productCode;
+        return product.getProductCode();
     }
 
     public int getQuantity() {
@@ -39,5 +46,13 @@ public class OrderLine {
 
     public float getPrice() {
         return price;
+    }
+
+    public Product getProduct(){
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product=product;
     }
 }
