@@ -8,12 +8,22 @@ public class Locomotive extends ProductDuringEra {
                       String productName,
                       float price,
                       Gauge gauge,
+                      int quantity,
                       String eraCode,
                       DCCCode dccCode) {
-        super(productCode, brand, productName, price, gauge, eraCode);
+        super(productCode, brand, productName, price, gauge, quantity, eraCode);
         this.dccCode = dccCode;
     }
+
+    public Locomotive() {
+        super();
+    }
+
     public DCCCode getDccCode() {
         return dccCode;
+    }
+
+    public void setDccCode(DCCCode dccCode) {
+        this.dccCode=dccCode;
     }
 }

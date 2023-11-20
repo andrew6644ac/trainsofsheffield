@@ -8,11 +8,21 @@ public class Controller extends Product{
                       String productName,
                       float price,
                       Gauge gauge,
+                      int quantity,
                       boolean isDigital) {
-        super(productCode, brand, productName, price, gauge, resultSet.getString("productType"));
+        super(productCode, brand, productName, price, gauge, quantity);
         this.isDigital = isDigital;
     }
+
+    public Controller() {
+
+    }
+
     public boolean isDigital() {
         return isDigital;
+    }
+
+    public void setDigital(boolean digital) {
+        isDigital = digital;
     }
 }

@@ -128,6 +128,10 @@ public class Order {
     public void setUser(User user) {
         this.user=user;
     }
+
+    public void setOrderLines(List<OrderLine> orderLines) {
+        this.orderLines=orderLines;
+    }
 }
 
 

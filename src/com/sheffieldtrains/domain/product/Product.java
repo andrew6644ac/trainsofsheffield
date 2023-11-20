@@ -7,13 +7,25 @@ public class Product {
     protected String productName;
     protected float price;
     protected Gauge gauge;
-    protected  String productType;
+    protected  ProductType productType;
+    protected int quantity;
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+
 
     public Product(String productCode,
                    String brand,
                    String productName,
                    float price,
-                   Gauge gauge) {
+                   Gauge gauge,
+                   int quantity) {
         this.productCode = productCode;
         this.brand = brand;
         this.productName = productName;
@@ -21,13 +33,22 @@ public class Product {
         this.gauge = gauge;
     }
 
-    public Product(String productCode, int quantity, String brand, String productName, float price, Gauge gauge, String productType) {
-        this(    productCode,
-                 brand,
-                 productName,
-                 price,
-                gauge);
+  /*  public Product(String productCode,
+                   String brand,
+                   String productName,
+                   float price,
+                   Gauge gauge,
+                   ProductType productType) {
+        this.productCode = productCode;
+        this.brand = brand;
+        this.productName = productName;
+        this.price = price;
+        this.gauge = gauge;
         this.productType=productType;
+    }*/
+
+    public Product() {
+
     }
 
     public String getProductCode() {

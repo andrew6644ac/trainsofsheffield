@@ -11,7 +11,7 @@ public class OrderService {
     private static List<Order> ORDERS_FOR_STAFF_TO_PROCESS= new ArrayList<>();
     private  Map<Integer, Order> userPendingOrders=new HashMap<>();
 
-    public boolean addToOrder(Integer userId, String productCode, int quantity) {
+    /*public boolean addToOrder(Integer userId, String productCode, int quantity) {
         boolean result=true;
         if (userId==null) throw new UnknownUserException("UserId cannot be null.");
         Order orderForUser=userPendingOrders.get(userId);
@@ -60,7 +60,7 @@ public class OrderService {
         ORDERS_FOR_STAFF_TO_PROCESS.add(order);
     }
 
-    /*public boolean confirmOrder(Integer userId, Map<String, Integer> orderItems)  {
+    *//*public boolean confirmOrder(Integer userId, Map<String, Integer> orderItems)  {
         if (userId==null||orderItems==null||orderItems.isEmpty()) {
             throw new IllegalOrderException();
         }
@@ -76,7 +76,7 @@ public class OrderService {
         ORDERS_FOR_STAFF_TO_PROCESS.add(order);
         persist(order);
         return true;
-    }*/
+    }*//*
 
 
     public Order getPendingOrder(String userId){
@@ -106,5 +106,5 @@ public class OrderService {
     private void persist(Order order) {
         OrderRepository.persistOrder(order);
     }
-
+*/
 }

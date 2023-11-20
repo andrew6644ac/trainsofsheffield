@@ -12,7 +12,7 @@ public class OrderLine {
 
     public OrderLine(String productCode, int quantity, float price) {
 //        this.productCode = productCode;
-        this.product=new Product(productCode, null, null, price, null, resultSet.getString("productType"));
+       /* this.product=new Product(productCode, null, null, price, null, null);*/
         this.quantity = quantity;
         this.price = price;
     }
@@ -50,5 +50,9 @@ public class OrderLine {
 
     public Product getProduct(){
         return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product=product;
     }
 }
