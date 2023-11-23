@@ -8,6 +8,7 @@ import com.sheffieldtrains.domain.user.UserRole;
 import java.util.Date;
 
 public class UserService {
+    //Register a new user with all parameters.
     public static User registerUser(String email,
                             String password,
                             String forename,
@@ -19,6 +20,7 @@ public class UserService {
         return UserRepository.registerUser(email, password, forename, surname, houseNumber, roadName, cityName, postcode);
     }
 
+    //Register a user if you want to create an user object first.
     public static User registerUser(User user){
         return registerUser(user.getEmail(),
                 user.getPassword(),
@@ -38,7 +40,7 @@ public class UserService {
        return UserRepository.getUser(email);
     }
 
-    /*Send newly edited user info.*/
+    /*Edit existing user info.*/
     public static void modifyUserDetails(User user){
         UserRepository.modifyUserDetails(user);
     }
@@ -49,7 +51,7 @@ public class UserService {
 
     /*promote a user to staff*/
     public static User promoteToStaff(User user){
-        //todo: check if the user is even a customer, if not, make it to be a customer first.
+        //todo: check if the user is even a customer, if not, make it to be a customer first.??
         return addUserRole(user, UserRole.STAFF);
     }
 
@@ -61,7 +63,7 @@ public class UserService {
         return user;
     }
 
-    /*demote a user to staff*/
+    /*demote a staff to user*/
     public static User demoteStaff(User user){
         user.demote();
         UserRepository.demoteUser(user);

@@ -1,6 +1,10 @@
 package com.sheffieldtrains.ui;
 
 //import statements
+import com.sheffieldtrains.db.UserAlreadyExistException;
+import com.sheffieldtrains.domain.user.User;
+import com.sheffieldtrains.service.UserService;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -355,7 +359,25 @@ public class Main {
                     signup_panel.add(incorrect2_lb);
                     frame.repaint();
                     //todo check if info is already existing
+
                 } else {
+                    /*try {
+                        //an example showing how to register a new user. If an user with the same email exists,
+                        //an UserAlreadyExistException wil be thrown. Need to do something about it.
+                        User user = UserService.registerUser(email_input_su,
+                                password_input_su,
+                                forename_input,
+                                surname_input,
+                                houseNum_input,
+                                roadName_input,
+                                cityName_input,
+                                postcode_input);
+                        System.out.println("User registered");
+                    }
+                    catch(UserAlreadyExistException ex){
+                        //todo: if the email id is already used, need to tell that such an user exists already. A pop up screen maybe?? .
+                        System.out.println("User already exists");
+                    }*/
                     CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
                     cardLayout.show(cardHolder, "LoginScreen");
                 }
