@@ -1,5 +1,7 @@
 package com.sheffieldtrains.domain.user;
 
+import java.util.Objects;
+
 public class Address {
     private String houseNumber;
     private String roadName;
@@ -46,5 +48,18 @@ public class Address {
 
     public void setPostcode(String postcode) {
         this.postcode = postcode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Address)) return false;
+        Address address = (Address) o;
+        return getHouseNumber().equals(address.getHouseNumber()) && getRoadName().equals(address.getRoadName()) && getCityName().equals(address.getCityName()) && getPostcode().equals(address.getPostcode());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getHouseNumber(), getRoadName(), getCityName(), getPostcode());
     }
 }

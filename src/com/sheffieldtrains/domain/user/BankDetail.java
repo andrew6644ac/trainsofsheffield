@@ -5,14 +5,14 @@ import java.util.Date;
 public class BankDetail {
     private String bankCardName;
     private String cardHolderName;
-    private int bankCardNumber;
+    private String bankCardNumber;
     private Date cardExpiryDate;
     private int securityCode;
 
 
     public BankDetail(String bankCardName,
                       String cardHolderName,
-                      int bankCardNumber,
+                      String bankCardNumber,
                       Date cardExpiryDate,
                       int securityCode) {
         this.bankCardName = bankCardName;
@@ -30,7 +30,7 @@ public class BankDetail {
         return cardHolderName;
     }
 
-    public int getBankCardNumber() {
+    public String getBankCardNumber() {
         return bankCardNumber;
     }
 

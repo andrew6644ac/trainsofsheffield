@@ -99,7 +99,7 @@ public class OrderRepository extends Repository {
                 user.setEmail(resultSet.getString("userEmail"));
                 user.setForename(resultSet.getString("userEmail"));
                 user.setSurname(resultSet.getString("userSurname"));
-                user.setRole(UserRole.valueOf(resultSet.getString("roleName")));
+                user.addRole(UserRole.valueOf(resultSet.getString("roleName")));
 
                 // Create Address
                 Address address = new Address();
