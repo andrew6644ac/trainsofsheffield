@@ -11,9 +11,8 @@ import java.util.Date;
 
 public class UserRepository extends Repository {
 
-
     private static final String ADD_USER_ROLE_SQL = """
-            INSERT INTO team066.userinrole (userID, roleName)
+            INSERT INTO team066.UserInRole (userID, roleName)
             VALUES  (?, ?)
             AS newUserRole
             ON DUPLICATE KEY UPDATE 
@@ -21,24 +20,24 @@ public class UserRepository extends Repository {
             roleName=newUserRole.roleName
 """;
     private static final String REMOVE_ROLE_SQL = """
-            DELETE FROM team066.userinrole 
+            DELETE FROM team066.UserInrole 
             WHERE userID=? and roleName=?
             """;
     private static String GET_USER_BY_EMAIL_OR_USER_ID_SQL = """
         SELECT u.userID, email , password, forename, surname, a.houseNumber, a.postcode, a.roadName, a.cityName, ur.roleName
-        FROM `team066`.`user` u
-        JOIN `team066`.`address` a ON u.houseNumber=a.houseNumber AND a.postcode=u.postcode
-        LEFT JOIN `team066`.`userinrole` ur   ON u.userID=ur.userID
+        FROM `team066`.`User` u
+        JOIN `team066`.`Address` a ON u.houseNumber=a.houseNumber AND a.postcode=u.postcode
+        LEFT JOIN `team066`.`UserInRole` ur   ON u.userID=ur.userID
         WHERE u.email=? or u.userID=?
             """;
 
     private static String REGISTER_NEW_USER_SQL = """
-        INSERT INTO `team066`.`user` (`email`, `password`, `forename`, `surname`, `houseNumber`, `postcode`) 
+        INSERT INTO `team066`.`User` (`email`, `password`, `forename`, `surname`, `houseNumber`, `postcode`) 
         VALUES (?, ?, ?, ?, ?, ?)
         """;
 
     private static String MODIFY_USER_SQL = """
-        UPDATE `team066`.`user` 
+        UPDATE `team066`.`User` 
         SET email=?, 
         password=?,
         forename=?,
@@ -49,7 +48,7 @@ public class UserRepository extends Repository {
         """;
 
     private static String REGISTER_OR_CHANGE_ADDRESS_SQL = """
-            INSERT INTO `team066`.`address` (`houseNumber`, `roadName`, `cityName`, `postcode`) 
+            INSERT INTO `team066`.`Address` (`houseNumber`, `roadName`, `cityName`, `postcode`) 
             VALUES (?, ?, ?, ?)
             AS newAddress
             ON DUPLICATE KEY UPDATE 
@@ -60,7 +59,7 @@ public class UserRepository extends Repository {
             """;
 
     private static String REGISTER_OR_CHANGE_BANK_DETAILS_SQL= """
-            INSERT INTO `team066`.`bankdetail` (`bankCardNumber`, `bankCardName`, `cardHolderName`, `cardExpiryDate`, `securityCode`, `userID`) 
+            INSERT INTO `team066`.`BankDetail` (`bankCardNumber`, `bankCardName`, `cardHolderName`, `cardExpiryDate`, `securityCode`, `userID`) 
             VALUES (?, ?, ?, ?, ?, ?)
             AS newCard
             ON DUPLICATE KEY UPDATE
@@ -78,7 +77,7 @@ public class UserRepository extends Repository {
                 cardHolderName,
                 cardExpiryDate,
                 securityCode
-        FROM team066.bankdetail
+        FROM team066.BankDetail
         WHERE userID=?
 """;
     public static User registerUser(String email,
@@ -398,10 +397,10 @@ public class UserRepository extends Repository {
     }
 
     public static void deleteUser(Integer userID) {
-        String deleteUserRoleSql="delete from team066.userinrole where userID =?";
-        String deleteUserBankDetailsSql="delete from team066.bankdetail where userID =?";
-        String deleteUserSql="delete from team066.user where userID=?";
-        String deleteAddressSql="delete from team066.address where houseNumber=? and postcode=?";
+        String deleteUserRoleSql="delete from team066.UserInRole where userID =?";
+        String deleteUserBankDetailsSql="delete from team066.BankDetail where userID =?";
+        String deleteUserSql="delete from team066.User where userID=?";
+        String deleteAddressSql="delete from team066.Address where houseNumber=? and postcode=?";
         try (PreparedStatement userRoleStmt=getConnection().prepareStatement(deleteUserRoleSql);
              PreparedStatement bankStmt=getConnection().prepareStatement(deleteUserBankDetailsSql);
              PreparedStatement userStmt=getConnection().prepareStatement(deleteUserSql);

@@ -36,12 +36,12 @@ public class OrderRepository extends Repository {
                         p.gauge,
                         p.productType
                     FROM
-                        order o 
-                    JOIN user u ON o.userID = u.userID
-                    JOIN userinrole ur ON u.userId=ur.userId
-                    JOIN address a ON u.houseNumber = a.houseNumber AND u.postcode = a.postcode
-                    JOIN orderline ol ON o.orderNumber = ol.orderNumber
-                    JOIN  product p ON ol.productCode = p.productCode
+                        team066.Order  o 
+                    JOIN team066.User u ON o.userID = u.userID
+                    JOIN team066.UserInRole  ur ON u.userId=ur.userId
+                    JOIN team066.Address  a ON u.houseNumber = a.houseNumber AND u.postcode = a.postcode
+                    JOIN team066.OrderLine  ol ON o.orderNumber = ol.orderNumber
+                    JOIN team066.Product  p ON ol.productCode = p.productCode
                     WHERE
                         o.status = 'PENDING'
                     Order By o.orderNumber ASC;

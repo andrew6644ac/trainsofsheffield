@@ -35,8 +35,8 @@ public class ProductRepository extends Repository {
                     lo.eraCode,
                     p.quantity
                 FROM
-                    team066.locomotive lo 
-                JOIN  team066.product p ON lo.productCode = p.productCode
+                    team066.Locomotive lo 
+                JOIN  team066.Product p ON lo.productCode = p.productCode
                 WHERE upper(p.productType)="LOCOMOTIVE"
             """;
 
@@ -50,8 +50,8 @@ public class ProductRepository extends Repository {
                     p.quantity,
                     c.isDigital
                 FROM
-                    team066.controller c
-                JOIN  team066.product p ON c.productCode = p.productCode
+                    team066.Controller c
+                JOIN  team066.Product p ON c.productCode = p.productCode
                 WHERE upper(p.productType)="CONTROLLER"
             """;
 
@@ -66,8 +66,8 @@ public class ProductRepository extends Repository {
                 r.eraCode,
                 r.type
             FROM
-                rollingstock r
-            JOIN  team066.product p ON r.productCode = p.productCode
+                RollingStock r
+            JOIN  team066.Product p ON r.productCode = p.productCode
             WHERE upper(p.productType)="ROLLING_STOCK"
             """;
 
@@ -80,7 +80,7 @@ public class ProductRepository extends Repository {
                     p.gauge,
                     p.quantity
                 FROM
-                    team066.product p
+                    team066.Product p
                 WHERE upper(p.productType)="TRACK"
             """;
 
@@ -97,10 +97,10 @@ public class ProductRepository extends Repository {
                     tk.productCode AS trackProductCode,
                     tip.quantity   AS trackQuantity
                 FROM
-                    team066.trackpack tp
-                        JOIN    team066.product p       ON tp.productCode=p.productCode
-                        JOIN    team066.trackinpack tip ON tp.productCode=tip.tpProductCode
-                        JOIN    team066.track tk        ON tk.productCode=tip.tkProductCode
+                    team066.TrackPack tp
+                        JOIN    team066.Product p       ON tp.productCode=p.productCode
+                        JOIN    team066.Trackinpack tip ON tp.productCode=tip.tpProductCode
+                        JOIN    team066.Track tk        ON tk.productCode=tip.tkProductCode
                 WHERE upper(p.productType)="TRACK_PACK"
                 ORDER BY p.productCode
             """;
@@ -111,8 +111,8 @@ public class ProductRepository extends Repository {
                     tp.tpProductCode AS trackPackCode,
                     tp.quantity
                 FROM
-                    team066.trainset ts
-                JOIN    team066.trackpackintrainset tp ON ts.productCode=tp.tsProductCode
+                    team066.TrainSet ts
+                JOIN    team066.Trackpackintrainset tp ON ts.productCode=tp.tsProductCode
                 ORDER BY ts.productCode
             """;
 
@@ -122,8 +122,8 @@ public class ProductRepository extends Repository {
                     lts.locProductCode AS locomotiveCode,
                     lts.quantity
                 FROM
-                    team066.trainset ts
-                JOIN    team066.locomointrainset lts ON lts.tsProductCode=ts.productCode
+                    team066.TrainSet ts
+                JOIN    team066.LocomoInTrainSet lts ON lts.tsProductCode=ts.productCode
                 ORDER BY ts.productCode
             """;
 
@@ -141,10 +141,10 @@ public class ProductRepository extends Repository {
                     rsts.rsProductCode AS rollingStockProductCode,
                     rsts.quantity    AS rollingStockQuantitiy
                 FROM
-                        team066.trainset ts
-                JOIN    team066.product p       ON ts.productCode=p.productCode
-                JOIN    team066.controller c    ON c.productCode=ts.controllerProductCode
-                JOIN    team066.rollingstockintrainset rsts ON ts.productCode=rsts.tsProductCode
+                        team066.Trainset ts
+                JOIN    team066.Product p       ON ts.productCode=p.productCode
+                JOIN    team066.Controller c    ON c.productCode=ts.controllerProductCode
+                JOIN    team066.RollingStockInTrainSet rsts ON ts.productCode=rsts.tsProductCode
                 WHERE upper(p.productType)="TRAIN_SET"
                 ORDER BY p.productCode, c.productCode, rsts.rsProductCode;
             """;
