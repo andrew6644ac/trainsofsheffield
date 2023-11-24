@@ -518,24 +518,56 @@ public class Main {
             }
         };
 
-        //todo gets current card number and output the last 4 digits
-        //todo tb and lb for bank details
-        //todo button to confirm and add to or update db
-        //6 digit sort code
-        //expiry date
-        //card number
-        //cvv cvc
+        //adds card number label
+        JLabel cardNumber_lb = new JLabel("Card Number:");
+        cardNumber_lb.setBounds(466, 100, 250, 30);
+        cardNumber_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(cardNumber_lb);
 
-        //todo ignore this this is useless
-        //JLabel password_lb_ed = new JLabel("Password:");
-        //password_lb_ed.setBounds(498, 100, 250, 30);
-        //password_lb_ed.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        //editDetails_panel.add(password_lb_ed);
+        //adds card number text box
+        JTextField cardNumber_tb = new JTextField(20);
+        cardNumber_tb.setBounds(580, 100, 270, 30);
+        bankDetails_panel.add(cardNumber_tb);
 
-        //adds password text box
-        //JTextField password_tb_ed = new JTextField(20);
-        //password_tb_ed.setBounds(580, 150, 270, 30);
-        //editDetails_panel.add(password_tb_ed);
+        //adds expiration date label
+        JLabel expiration_lb = new JLabel("Expiration Date:");
+        expiration_lb.setBounds(448, 150, 250, 30);
+        expiration_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(expiration_lb);
+
+        //adds expiration date text box
+        JTextField expiration_tb = new JTextField(20);
+        expiration_tb.setBounds(580, 150, 270, 30);
+        bankDetails_panel.add(expiration_tb);
+
+        //adds cvv label
+        JLabel cvv_lb = new JLabel("CVV Code:");
+        cvv_lb.setBounds(490, 200, 250, 30);
+        cvv_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(cvv_lb);
+
+        //adds cvv text box
+        JTextField cvv_tb = new JTextField(20);
+        cvv_tb.setBounds(580, 200, 270, 30);
+        bankDetails_panel.add(cvv_tb);
+
+        //adds confirm button
+        JButton confirm_bt_bd = new JButton("Confirm");
+        confirm_bt_bd.setBounds(500, 680, 150, 75);
+        confirm_bt_bd.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        bankDetails_panel.add(confirm_bt_bd);
+
+        //Action listener for confirm button
+        ActionListener confirm_pressed3 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //todo check info is valid including date, num and length
+                //todo put info into db
+                String cardNum_input = cardNumber_tb.getText();
+                String expire_input = expiration_tb.getText();
+                String cvv_input = cvv_tb.getText();
+            }
+        };
 
 
 
@@ -1147,6 +1179,7 @@ public class Main {
         back_bt10.addActionListener(back_pressed10);
         oDetail_bt.addActionListener(oDetail_pressed);
         back_bt11.addActionListener(back_pressed11);
+        confirm_bt_bd.addActionListener(confirm_pressed3);
 
         //required stuff
         frame.add(cardHolder);
@@ -1154,5 +1187,4 @@ public class Main {
         frame.setVisible(true);
 
     }
-
 }
