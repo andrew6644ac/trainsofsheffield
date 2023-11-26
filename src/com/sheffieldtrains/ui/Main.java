@@ -1,14 +1,20 @@
 package com.sheffieldtrains.ui;
 
-//import statements
-import com.sheffieldtrains.db.UserAlreadyExistException;
-import com.sheffieldtrains.domain.user.User;
-import com.sheffieldtrains.service.UserService;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JTable;
+import javax.swing.JScrollPane;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import javax.swing.DefaultListModel; import javax.swing.JFrame; import javax.swing.JList; import javax.swing.JScrollPane;
 
 
 public class Main {
@@ -117,9 +123,6 @@ public class Main {
         logout_bt1.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         menu_panel.add(logout_bt1);
 
-        //if
-
-
         //Action listener for logout button
         ActionListener logout_pressed1 = new ActionListener() {
             @Override
@@ -146,9 +149,21 @@ public class Main {
             }
         };
 
+        //adds view basket button
+        JButton viewBasket_bt = new JButton("View Basket");
+        viewBasket_bt.setBounds(480, 680, 250, 75);
+        viewBasket_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        menu_panel.add(viewBasket_bt);
 
-        //todo
-        //System.out.println(loggedIn.email);
+        //Action listener for account button
+        ActionListener viewBasket_pressed = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to basket Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "BasketScreen");
+            }
+        };
 
 
         //todo
@@ -166,10 +181,8 @@ public class Main {
             public void actionPerformed(ActionEvent e) {
                 // Get the selected item
                 String stock_selected = (String) stock_sort_CB.getSelectedItem();
-
                 temp_lb.setText("selected item is: " + stock_selected);
                 menu_panel.repaint();
-
             }
         });
 
@@ -307,7 +320,7 @@ public class Main {
         signUp_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         signup_panel.add(signUp_bt);
 
-        //Action listener for logout button
+        //Action listener for sign up button
         ActionListener signUp_pressed = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -349,7 +362,7 @@ public class Main {
                     incorrect1_lb.setForeground(Color.RED);
                     signup_panel.add(incorrect1_lb);
                     frame.repaint();
-                //if any text box contains more characters than it's supposed to it adds a label to say so
+                    //if any text box contains more characters than it's supposed to it adds a label to say so
                 } else if (email_length > 50 || password_length > 20 || forename_length > 20 || surname_length > 20
                         || houseNum_length > 10 || postcode_length > 20 || roadName_length > 100 || cityName_length > 100) {
                     JLabel incorrect2_lb = new JLabel("Please ensure your information does not exceed the length limit");
@@ -392,6 +405,8 @@ public class Main {
 
         //Creates account panel
         JPanel account_panel = new JPanel(null);
+
+
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_ac = new JLabel("Account");
@@ -463,6 +478,30 @@ public class Main {
             }
         };
 
+        //adds staff button
+        JButton staff_bt = new JButton("Staff");
+        staff_bt.setBounds(1025, 85, 150, 75);
+        staff_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        account_panel.add(staff_bt);
+
+
+        //Action listener for edit details button
+        ActionListener staff_pressed = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to edit details screen
+                //todo check if they have authority else put label saying they don't
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "StaffScreen");
+            }
+        };
+
+
+
+
+
+
+
 
         //Creates bank details panel
         JPanel bankDetails_panel = new JPanel(null);
@@ -488,6 +527,61 @@ public class Main {
                 cardLayout.show(cardHolder, "AccountScreen");
             }
         };
+
+        //adds card number label
+        JLabel cardNumber_lb = new JLabel("Card Number:");
+        cardNumber_lb.setBounds(466, 100, 250, 30);
+        cardNumber_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(cardNumber_lb);
+
+        //adds card number text box
+        JTextField cardNumber_tb = new JTextField(20);
+        cardNumber_tb.setBounds(580, 100, 270, 30);
+        bankDetails_panel.add(cardNumber_tb);
+
+        //adds expiration date label
+        JLabel expiration_lb = new JLabel("Expiration Date:");
+        expiration_lb.setBounds(448, 150, 250, 30);
+        expiration_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(expiration_lb);
+
+        //adds expiration date text box
+        JTextField expiration_tb = new JTextField(20);
+        expiration_tb.setBounds(580, 150, 270, 30);
+        bankDetails_panel.add(expiration_tb);
+
+        //adds cvv label
+        JLabel cvv_lb = new JLabel("CVV Code:");
+        cvv_lb.setBounds(490, 200, 250, 30);
+        cvv_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(cvv_lb);
+
+        //adds cvv text box
+        JTextField cvv_tb = new JTextField(20);
+        cvv_tb.setBounds(580, 200, 270, 30);
+        bankDetails_panel.add(cvv_tb);
+
+        //adds confirm button
+        JButton confirm_bt_bd = new JButton("Confirm");
+        confirm_bt_bd.setBounds(500, 680, 150, 75);
+        confirm_bt_bd.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        bankDetails_panel.add(confirm_bt_bd);
+
+        //Action listener for confirm button
+        ActionListener confirm_pressed3 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //todo check info is valid including date, num and length
+                //todo put info into db
+                String cardNum_input = cardNumber_tb.getText();
+                String expire_input = expiration_tb.getText();
+                String cvv_input = cvv_tb.getText();
+            }
+        };
+
+
+
+
 
 
         //Creates Edit Details panel
@@ -515,6 +609,13 @@ public class Main {
             }
         };
 
+        //adds addInfo button
+        JButton addInfo_bt = new JButton("Add Info");
+        addInfo_bt.setBounds(525, 550, 150, 75);
+        addInfo_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        editDetails_panel.add(addInfo_bt);
+
+
         //adds email label
         JLabel email_lb_ed = new JLabel("Email:");
         email_lb_ed.setBounds(525, 100, 200, 30);
@@ -524,8 +625,6 @@ public class Main {
         //adds email text box
         JTextField email_tb_ed = new JTextField(20);
         email_tb_ed.setBounds(580, 100, 300, 30);
-        //todo populate text box with email
-        email_tb_ed.setText("loggedIn.email");
         editDetails_panel.add(email_tb_ed);
 
         //adds password label
@@ -613,6 +712,16 @@ public class Main {
         confirm_bt_ed.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         editDetails_panel.add(confirm_bt_ed);
 
+        ActionListener addInfo_pressed = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //todo Adds existing info to text boxes
+                //todo gets user details where email is loggedIn.email
+                email_tb_ed.setText(loggedIn.email);
+                //todo somehow clear on logout
+            }
+        };
+
         //Action listener for edit details button
         ActionListener confirm_pressed = new ActionListener() {
             @Override
@@ -667,6 +776,7 @@ public class Main {
                     //todo check if info is already existing for different user if required
                 } else {
                     //todo change details in db and on account page
+                    //todo if email is changed update loggedIn.email
                     CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
                     cardLayout.show(cardHolder, "AccountScreen");
                 }
@@ -707,6 +817,472 @@ public class Main {
 
 
 
+        //Creates staff area panel
+        JPanel staff_panel = new JPanel(null);
+
+        // creates table(showing stocking)
+        DefaultTableModel productModel = new DefaultTableModel();
+        productModel.addColumn("Product Code");
+        productModel.addColumn("Brand");
+        productModel.addColumn("Product Name");
+        productModel.addColumn("Price");
+        productModel.addColumn("Product Type");
+        productModel.addColumn("Quantity");
+        // 这部分代码可以放在显示 staff_panel 的事件监听器中或在您认为合适的任何地方
+        try {
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo"
+            );
+
+            String sql = "SELECT productCode, brand, productName, price, productType, quantity FROM Product";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String productCode = rs.getString("productCode");
+                String brand = rs.getString("brand");
+                String productName = rs.getString("productName");
+                double price = rs.getDouble("price");
+                String productType = rs.getString("productType");
+                int quantity = rs.getInt("quantity");
+
+                productModel.addRow(new Object[]{productCode, brand, productName, price, productType, quantity});
+            }
+
+            rs.close();
+            ps.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // 处理异常
+        }
+
+
+// 创建表格并将其添加到滚动面板中，然后添加到 staff_panel 中
+        // 创建表格并将其添加到滚动面板中，然后添加到 staff_panel 中
+        JTable productTable = new JTable(productModel);
+        JScrollPane productScrollPane = new JScrollPane(productTable); // 使用不同的变量名
+        productScrollPane.setBounds(300, 100, 800, 600); // 根据需要调整位置和大小
+        staff_panel.add(productScrollPane);
+
+
+
+        //adds a title in the centre at the top in bold font size 40
+        JLabel title_st = new JLabel("Staff Area");
+        title_st.setBounds(500, 25, 600, 45);
+        title_st.setFont(new Font("Times New Roman", Font.BOLD, 40));
+        staff_panel.add(title_st);
+
+        //adds back button
+        JButton back_bt6 = new JButton("Back");
+        back_bt6.setBounds(1025, 10, 150, 75);
+        back_bt6.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        staff_panel.add(back_bt6);
+
+
+
+        //Action listener for back button
+        ActionListener back_pressed6 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "AccountScreen");
+            }
+        };
+
+        //adds customer info button
+        JButton cInfo_bt = new JButton("Customer Info");
+        cInfo_bt.setBounds(815, 10, 200, 75);
+        cInfo_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        staff_panel.add(cInfo_bt);
+
+
+        //Action listener for customer info button
+        ActionListener cInfo_pressed = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to customer info Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "CustomerInfoScreen");
+            }
+        };
+
+        //adds promote/demote button
+        JButton promote_bt = new JButton("Promote/Demote");
+        promote_bt.setBounds(10, 10, 220, 75);
+        promote_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        staff_panel.add(promote_bt);
+
+        //Action listener for promote info button
+        ActionListener promote_pressed = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to customer info Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "PromoteScreen");
+            }
+        };
+
+        //adds order detail button
+        JButton oDetail_bt = new JButton("Order details");
+        oDetail_bt.setBounds(240, 10, 220, 75);
+        oDetail_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        staff_panel.add(oDetail_bt);
+
+
+
+        //Action listener for promote info button
+        ActionListener oDetail_pressed = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to customer info Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "OrderDetailScreen");
+            }
+        };
+
+
+        //Creates customer info area panel
+        JPanel customerInfo_panel = new JPanel(null);
+
+        //adds a title in the centre at the top in bold font size 40
+        JLabel title_ci = new JLabel("Customer Info");
+        title_ci.setBounds(500, 25, 600, 45);
+        title_ci.setFont(new Font("Times New Roman", Font.BOLD, 40));
+        customerInfo_panel.add(title_ci);
+
+        //adds back button
+        JButton back_bt7 = new JButton("Back");
+        back_bt7.setBounds(1025, 10, 150, 75);
+        back_bt7.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        customerInfo_panel.add(back_bt7);
+
+        //Action listener for back button
+        ActionListener back_pressed7 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "StaffScreen");
+            }
+        };
+
+
+        //adds Email: label
+        JLabel email_lb_ci = new JLabel("Email:");
+        email_lb_ci.setBounds(300, 100, 70, 30);
+        email_lb_ci.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(email_lb_ci);
+
+        //adds email text box
+        JTextField email_tb_ci = new JTextField(20);
+        email_tb_ci.setBounds(370, 100, 500, 30);
+        customerInfo_panel.add(email_tb_ci);
+
+        //adds search button
+        JButton search_bt = new JButton("Search");
+        search_bt.setBounds(880, 95, 150, 40);
+        search_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        customerInfo_panel.add(search_bt);
+
+        //adds email label
+        JLabel email_lb_ci2 = new JLabel("Email");
+        email_lb_ci2.setBounds(525, 150, 400, 30);
+        email_lb_ci2.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(email_lb_ci2);
+
+        //adds password label
+        JLabel password_lb_ci = new JLabel("Password");
+        password_lb_ci.setBounds(498, 200, 450, 30);
+        password_lb_ci.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(password_lb_ci);
+
+        //adds forename label
+        JLabel forename_lb_ci = new JLabel("Forename");
+        forename_lb_ci.setBounds(494, 250, 450, 30);
+        forename_lb_ci.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(forename_lb_ci);
+
+        //adds surname label
+        JLabel surname_lb_ci = new JLabel("Surname");
+        surname_lb_ci.setBounds(503, 300, 450, 30);
+        surname_lb_ci.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(surname_lb_ci);
+
+        //adds postcode label
+        JLabel postcode_lb_ci = new JLabel("Postcode");
+        postcode_lb_ci.setBounds(502, 350, 450, 30);
+        postcode_lb_ci.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(postcode_lb_ci);
+
+        //adds house number label
+        JLabel houseNumber_lb_ci = new JLabel("House Number");
+        houseNumber_lb_ci.setBounds(453, 400, 450, 30);
+        houseNumber_lb_ci.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(houseNumber_lb_ci);
+
+        //adds road name label
+        JLabel roadName_lb_ci = new JLabel("Road Name");
+        roadName_lb_ci.setBounds(480, 450, 450, 30);
+        roadName_lb_ci.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(roadName_lb_ci);
+
+        //adds City name label
+        JLabel cityName_lb_ci = new JLabel("City Name");
+        cityName_lb_ci.setBounds(488, 500, 450, 30);
+        cityName_lb_ci.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        customerInfo_panel.add(cityName_lb_ci);
+
+        //Action listener for search button
+        ActionListener search_pressed = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to searches and displays user info
+                //todo get user info from db if email matches
+                String emailInputted = email_tb_ci.getText();
+                email_lb_ci2.setText(emailInputted);
+            }
+        };
+
+
+
+
+
+        //Creates basket panel
+        JPanel basket_panel = new JPanel(null);
+
+        //adds a title in the centre at the top in bold font size 40
+        JLabel title_bs = new JLabel("Basket");
+        title_bs.setBounds(500, 25, 600, 45);
+        title_bs.setFont(new Font("Times New Roman", Font.BOLD, 40));
+        basket_panel.add(title_bs);
+
+        //adds back button
+        JButton back_bt8 = new JButton("Back");
+        back_bt8.setBounds(1025, 10, 150, 75);
+        back_bt8.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        basket_panel.add(back_bt8);
+
+        //Action listener for back button
+        ActionListener back_pressed8 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "MenuScreen");
+            }
+        };
+
+        //adds confirm button
+        JButton confirm_bt_bs = new JButton("Confirm");
+        confirm_bt_bs.setBounds(510, 680, 150, 75);
+        confirm_bt_bs.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        basket_panel.add(confirm_bt_bs);
+
+        //Action listener for back button
+        ActionListener confirm_pressed2 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                //todo check if bank details present in db and go to screen accordingly
+                /*
+                if (bank details in db == null) {
+                    CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                    cardLayout.show(cardHolder, "BankDetailsScreen");
+                } else {
+                    CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                    cardLayout.show(cardHolder, "ConfirmScreen");
+                }
+
+                */
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "ConfirmScreen");
+            }
+        };
+
+
+
+
+        //Creates confirm panel
+        JPanel confirm_panel = new JPanel(null);
+
+        //adds a title in the centre at the top in bold font size 40
+        JLabel title_cf = new JLabel("Confirmation");
+        title_cf.setBounds(480, 25, 600, 45);
+        title_cf.setFont(new Font("Times New Roman", Font.BOLD, 40));
+        confirm_panel.add(title_cf);
+
+        //adds back button
+        JButton back_bt9 = new JButton("Menu");
+        back_bt9.setBounds(1025, 10, 150, 75);
+        back_bt9.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        confirm_panel.add(back_bt9);
+
+        //Action listener for back button
+        ActionListener back_pressed9 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "MenuScreen");
+            }
+        };
+
+        //adds details about order
+        JLabel details_lb = new JLabel("Order number... ");
+        details_lb.setBounds(480, 150, 600, 45);
+        details_lb.setFont(new Font("Times New Roman", Font.BOLD, 40));
+        confirm_panel.add(details_lb);
+
+
+
+
+        //Creates promote panel
+        JPanel promote_panel = new JPanel(null);
+
+        //adds a title in the centre at the top in bold font size 40
+        JLabel title_pr = new JLabel("Promote/Demote");
+        title_pr.setBounds(480, 25, 600, 45);
+        title_pr.setFont(new Font("Times New Roman", Font.BOLD, 40));
+        promote_panel.add(title_pr);
+
+        //adds back button
+        JButton back_bt10 = new JButton("Back");
+        back_bt10.setBounds(1025, 10, 150, 75);
+        back_bt10.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        promote_panel.add(back_bt10);
+
+        //Action listener for back button
+        ActionListener back_pressed10 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "StaffScreen");
+            }
+        };
+
+
+
+
+
+
+        //Creates order detail panel
+        JPanel orderDetail_panel = new JPanel(null);
+
+        //adds a title in the centre at the top in bold font size 40
+        JLabel title_od = new JLabel("Order Details");
+        title_od.setBounds(480, 25, 600, 45);
+        title_od.setFont(new Font("Times New Roman", Font.BOLD, 40));
+        orderDetail_panel.add(title_od);
+
+        //adds back button
+        JButton back_bt11 = new JButton("Back");
+        back_bt11.setBounds(1025, 10, 150, 75);
+        back_bt11.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        orderDetail_panel.add(back_bt11);
+
+
+
+        //Action listener for back button
+        ActionListener back_pressed11 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "StaffScreen");
+            }
+        };
+
+// Add table
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("userID");
+        model.addColumn("email");
+        model.addColumn("Order ID");
+        model.addColumn("Order Date");
+        // Initialize the table model
+
+        model = new DefaultTableModel();
+        model.addColumn("userID");
+        model.addColumn("email");
+        model.addColumn("Order Number");
+        model.addColumn("Order Date");
+
+// Initialize JTable with the model
+        JTable table = new JTable(model);
+        orderDetail_panel.add(new JScrollPane(table)); // Add table to panel inside a scroll pane
+
+        try {
+            // Establish database connection
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo"
+            );
+
+            // JOIN query to retrieve user and their order details
+            String sql = "SELECT User.userID, User.email, Order1.orderNumber, Order1.orderDate " +
+                    "FROM User JOIN Order1 ON User.userID = Order1.userID";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            // Process ResultSet and add data to the model
+            while (rs.next()) {
+                int userID = rs.getInt("userID");
+                String email = rs.getString("email");
+                int orderNumber = rs.getInt("orderNumber");
+                Date orderDate = rs.getDate("orderDate");
+
+                model.addRow(new Object[]{userID, email, orderNumber, orderDate});
+            }
+
+            // Close resources
+            rs.close();
+            ps.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle exceptions appropriately
+        }
+
+
+
+// ... Other columns ...
+        JTable ordersTable = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(ordersTable);
+        scrollPane.setBounds(400, 100, 600, 500);
+        orderDetail_panel.add(scrollPane);
+
+// Add event listener to the table
+        ordersTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                // Display the detailed information of the selected order
+            }
+        });
+
+// Add fulfill and reject buttons
+        JButton fulfillButton = new JButton("Fulfill Order");
+        fulfillButton.setBounds(50, 100, 150, 30);
+        fulfillButton.addActionListener(e -> {
+            // Code to fulfill the order
+        });
+        orderDetail_panel.add(fulfillButton);
+
+        JButton rejectButton = new JButton("Reject Order");
+        rejectButton.setBounds(50, 150, 150, 30);
+        rejectButton.addActionListener(e -> {
+            // Code to reject the order
+        });
+        orderDetail_panel.add(rejectButton);
+
+// ... Configure the back button, etc. ...
+
+// Add orderDetail_panel to cardHolder
+        cardHolder.add(orderDetail_panel, "OrderDetailScreen");
+
+
+
 
         //Adds the screens to the cardholder
         cardHolder.add(login_panel, "LoginScreen");
@@ -716,6 +1292,13 @@ public class Main {
         cardHolder.add(pHistory_panel, "PHistoryScreen");
         cardHolder.add(bankDetails_panel, "BankDetailsScreen");
         cardHolder.add(editDetails_panel, "EditDetailsScreen");
+        cardHolder.add(staff_panel, "StaffScreen");
+        cardHolder.add(customerInfo_panel, "CustomerInfoScreen");
+        cardHolder.add(basket_panel, "BasketScreen");
+        cardHolder.add(confirm_panel, "ConfirmScreen");
+        cardHolder.add(promote_panel, "PromoteScreen");
+        cardHolder.add(orderDetail_panel, "OrderDetailScreen");
+
 
         //Action listeners
         login_bt.addActionListener(login_pressed);
@@ -732,6 +1315,21 @@ public class Main {
         back_bt5.addActionListener(back_pressed5);
         eDetails_bt.addActionListener(eDetails_pressed);
         confirm_bt_ed.addActionListener(confirm_pressed);
+        back_bt6.addActionListener(back_pressed6);
+        staff_bt.addActionListener((staff_pressed));
+        cInfo_bt.addActionListener((cInfo_pressed));
+        back_bt7.addActionListener(back_pressed7);
+        addInfo_bt.addActionListener(addInfo_pressed);
+        search_bt.addActionListener(search_pressed);
+        back_bt8.addActionListener(back_pressed8);
+        viewBasket_bt.addActionListener(viewBasket_pressed);
+        back_bt9.addActionListener(back_pressed9);
+        confirm_bt_bs.addActionListener(confirm_pressed2);
+        promote_bt.addActionListener(promote_pressed);
+        back_bt10.addActionListener(back_pressed10);
+        oDetail_bt.addActionListener(oDetail_pressed);
+        back_bt11.addActionListener(back_pressed11);
+        confirm_bt_bd.addActionListener(confirm_pressed3);
 
         //required stuff
         frame.add(cardHolder);
@@ -739,5 +1337,4 @@ public class Main {
         frame.setVisible(true);
 
     }
-
 }

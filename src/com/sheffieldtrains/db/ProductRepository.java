@@ -470,14 +470,5 @@ public class ProductRepository extends Repository {
         trainSet.setRollingStockList(rollingStockInTrainSetList);
         return trainSet;
     }
-    // Create OrderLines
-   /* List<OrderLine> orderLines = new ArrayList<>();
-                do {
-        OrderLine orderLine = new OrderLine();
-        orderLine.setLineNumber(resultSet.getInt("lineNumber"));
-        Product product =buildProduct(resultSet);
-        orderLine.setProduct(product);
-        orderLine.setQuantity(resultSet.getInt("quantity"));
-        orderLines.add(orderLine);
-    } while (resultSet.next() && resultSet.getInt("orderNumber") == orderNumber);*/
+
 }

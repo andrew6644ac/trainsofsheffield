@@ -1,5 +1,6 @@
 package com.sheffieldtrains.domain.order;
 
+import com.sheffieldtrains.domain.product.ProductType;
 import com.sheffieldtrains.domain.user.User;
 import com.sheffieldtrains.service.UnknownOrderLineException;
 
@@ -22,16 +23,21 @@ public class Order {
 
     public Order(){}
 
-    public Order(Integer userId, OrderLine orderLine) {
+    /*public Order(Integer userId, OrderLine orderLine) {
         this.userId = userId;
         //orderLine.setLineNumber(orderLineNumberCounter++);
         this.orderLines.add(orderLine);
-    }
+    }*/
 
-    public Order(Integer userId, String productCode, int quantity ,  float productPrice) {
+    public Order(Integer userId, Date orderDate, String productCode, ProductType productType,  int quantity ,  float productPrice) {
         this.userId = userId;
         OrderLine orderLine= new OrderLine(productCode, quantity,  productPrice*quantity);
-       // orderLine.setLineNumber(orderLineNumberCounter++);
+        this.orderLines.add(orderLine);
+    }
+
+    public Order(Integer userId, Date orderDate, OrderLine orderLine) {
+        this.userId = userId;
+        this.orderDate=orderDate;
         this.orderLines.add(orderLine);
     }
 
@@ -56,6 +62,7 @@ public class Order {
     }
 
     public void addOrderLine(String productCode,
+                             ProductType productType,
                              int quantity,
                              float productPrice) {
         OrderLine existingOrderLine= findOrderLine(productCode);
@@ -66,7 +73,7 @@ public class Order {
             existingOrderLine.setPrice(existingOrderLine.getPrice() + quantity * productPrice);
         }
         else {//if no existing orderLine, creat a new orderLine and add it to order.
-            OrderLine newOrderLine=new OrderLine(productCode, quantity, productPrice);
+            OrderLine newOrderLine=new OrderLine(productCode, productType, quantity, productPrice);
             //newOrderLine.setLineNumber(orderLineNumberCounter++);
             orderLines.add(newOrderLine);
         }

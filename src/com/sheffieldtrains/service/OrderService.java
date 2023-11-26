@@ -4,6 +4,8 @@ import com.sheffieldtrains.db.OrderRepository;
 import com.sheffieldtrains.domain.order.Order;
 import com.sheffieldtrains.domain.order.OrderLine;
 import com.sheffieldtrains.domain.order.OrderStatus;
+import com.sheffieldtrains.domain.product.ProductType;
+import com.sheffieldtrains.domain.user.User;
 
 import java.util.*;
 
@@ -11,22 +13,23 @@ public class OrderService {
     private static List<Order> ORDERS_FOR_STAFF_TO_PROCESS= new ArrayList<>();
     private  Map<Integer, Order> userPendingOrders=new HashMap<>();
 
-    /*public boolean addToOrder(Integer userId, String productCode, int quantity) {
+    public boolean addToOrder(Integer userId, String productCode, ProductType productType, int quantity, float productPrice) {
         boolean result=true;
         if (userId==null) throw new UnknownUserException("UserId cannot be null.");
         Order orderForUser=userPendingOrders.get(userId);
-        //haven't created a pending order before
+        //haven't had a pending order at the moment
         //obtain product price
-        float productPrice= getProductPrice(productCode);
+//        float productPrice= getProductPrice(productCode, productType);
+        float orderLinePrice=productPrice*quantity;
         if (orderForUser==null) {
             //creat a new OrderLine;
-            OrderLine orderLine= new OrderLine(productCode, quantity,  productPrice*quantity);
-            Order order=new Order(userId, orderLine);
+            OrderLine orderLine= new OrderLine(productCode,   productType,  quantity,  orderLinePrice);
+            Order order=new Order(userId, new Date(),  orderLine);
             userPendingOrders.put(userId, order);
         }
         else {
                 //did the user have an orderLine of the same product, if yes, merge quantity.
-                orderForUser.addOrderLine(productCode, quantity, productPrice);
+                orderForUser.addOrderLine(productCode, productType, quantity, orderLinePrice);
         }
         return result;
     }
@@ -42,12 +45,7 @@ public class OrderService {
             }
     }
 
-
-    public List<Order> getAllHistoricalOrders(){
-        return OrderRepository.getAllHistoricalOrders();
-    }
-
-    public List<Order> getHistoricalOrdersFromUser(String userId){
+    public List<Order> getHistoricalOrdersFromUser(Integer userId){
         return OrderRepository.getHistoricalOrdersFromUser(userId);
     }
 
@@ -56,11 +54,17 @@ public class OrderService {
         if (userId==null) throw new OrderNotFoundException("The userId has no pending order to confirm");
         order.setStatus(OrderStatus.CONFIRMED);
         order.assignOrderLineIds();
-        OrderRepository.persistOrder(order);
-        ORDERS_FOR_STAFF_TO_PROCESS.add(order);
+        OrderRepository.saveOrder(order);
+        //todo: need to rethink about the
+        User user=new User();
+        user.setUserID(userId);
+        UserService.makeUserCustomer(user);
+        //after confirmation, the user has no longer a pending order.
+        userPendingOrders.remove(userId);
+        //todo: ??ORDERS_FOR_STAFF_TO_PROCESS.add(order);
     }
 
-    *//*public boolean confirmOrder(Integer userId, Map<String, Integer> orderItems)  {
+    /*public boolean confirmOrder(Integer userId, Map<String, Integer> orderItems)  {
         if (userId==null||orderItems==null||orderItems.isEmpty()) {
             throw new IllegalOrderException();
         }
@@ -68,7 +72,7 @@ public class OrderService {
         for(Map.Entry<String, Integer> item: orderItems.entrySet()) {
                 String productCode=item.getKey();
                 Integer quantity=item.getValue();
-                float price=getProductPrice(productCode);
+                float price=*//*getProductPrice(productCode, null);*//* 0; //todo: sort out productType
                 OrderLine orderLine= new OrderLine(productCode, quantity, price*quantity);
                 order=new Order(userId, orderLine);
         }
@@ -76,35 +80,43 @@ public class OrderService {
         ORDERS_FOR_STAFF_TO_PROCESS.add(order);
         persist(order);
         return true;
-    }*//*
+    }*/
 
 
-    public Order getPendingOrder(String userId){
+    public Order getPendingOrder(Integer userId){
         if (userId==null){
             throw new UnknownUserException("User Id cannot be null");
         }
        return userPendingOrders.get(userId);
     }
 
-
-    public List<Order> getAllOrdersToBeProcessed(){
-        return OrderRepository.getAllOrdersToBeProcessed();
+    public List<Order> getAllOrdersToBeFulfilled(){
+        List<Order> orderList= OrderRepository.getAllOrdersToBeFulfilled();
+        Comparator comparator= new Comparator<Order>() {
+            @Override
+            public int compare(Order order1, Order order2) {
+                return order1.getOrderDate().compareTo(order2.getOrderDate());
+            }
+        };
+        Collections.sort(orderList, comparator );
+        return orderList;
     }
 
     public void fulfillOrder(Long orderId){
-
-        //Todo:
-        //loop through orders in the queue, change their status to fullfilled, and remove it from the queue.
-        //archive the changed order into db.
+        OrderRepository.fulfillOrder(orderId);
     }
 
-    private float getProductPrice(String productCode) {
+    private float getProductPrice(String productCode, ProductType productType) {
         //Todo: need to go to grab the price from ProductService;
-        return ProductService.getProductPrice(productCode);
+        return ProductService.getProductPrice(productCode, productType);
     }
 
-    private void persist(Order order) {
-        OrderRepository.persistOrder(order);
+
+    public void deleteOrderByUserId(Integer userId){
+        OrderRepository.deleteOrderByUserId(userId);
     }
-*/
+
+    public void deleteOrderByOrderId(Long orderId){
+        OrderRepository.deleteOrderByOrderId(orderId);
+    }
 }

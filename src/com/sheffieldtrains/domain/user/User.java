@@ -17,6 +17,8 @@ public class User {
         private Address address;
         private List<Order> orders;
 
+        private BankDetail bankDetail;
+
     public User(Integer userID,
                 String email,
                 String password,
@@ -134,5 +136,17 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(getEmail(), getPassword(), getForename(), getSurname(), getRoles(), getAddress());
+    }
+
+    public BankDetail getBankDetail() {
+        return bankDetail;
+    }
+
+    public void setBankDetail(BankDetail bankDetail) {
+        this.bankDetail = bankDetail;
+    }
+
+    public boolean hasBankDetail(){
+       return bankDetail==null;
     }
 }

@@ -11,6 +11,7 @@ import java.util.Date;
 
 public class UserRepository extends Repository {
 
+
     private static final String ADD_USER_ROLE_SQL = """
             INSERT INTO team066.UserInRole (userID, roleName)
             VALUES  (?, ?)
@@ -245,6 +246,8 @@ public class UserRepository extends Repository {
                     user.addRole(UserRole.valueOf(roleName));
                 }
             }
+            BankDetail bankDetail=getBankDetail(user.getUserID());
+            user.setBankDetail(bankDetail);
         } catch (SQLException ex) {
             throw new RuntimeException("Database error when trying to retrieve user information");
         } finally {

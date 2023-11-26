@@ -31,6 +31,21 @@ public class Product {
         this.productName = productName;
         this.price = price;
         this.gauge = gauge;
+        this.quantity=quantity;
+    }
+
+    public Product(String productCode,
+                   String brand,
+                   String productName,
+                   float price,
+                   Gauge gauge,
+                   ProductType productType) {
+        this.productCode = productCode;
+        this.brand = brand;
+        this.productName = productName;
+        this.price = price;
+        this.gauge = gauge;
+        this.productType=productType;
     }
 
   /*  public Product(String productCode,

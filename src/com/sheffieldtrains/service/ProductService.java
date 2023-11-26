@@ -41,14 +41,13 @@ public class ProductService {
         //todo:
     }
 
-    public static float getProductPrice(String productId) {
-        //ToDo: to implement
-        return 100;
+    public static float getProductPrice(String productId, ProductType productType) {
+       return getProduct(productId, productType).getPrice();
     }
 
 
-    public static void getProduct(String productCode, ProductType productType) {
-        ProductRepository.getProduct(productCode, productType);
+    public static Product getProduct(String productCode, ProductType productType) {
+        return ProductRepository.getProduct(productCode, productType);
     }
 
     public static List<Locomotive> getAllLocomotives(){
