@@ -1,14 +1,20 @@
 package com.sheffieldtrains.ui;
 
-//import statements
-import com.sheffieldtrains.db.UserAlreadyExistException;
-import com.sheffieldtrains.domain.user.User;
-import com.sheffieldtrains.service.UserService;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JTable;
+import javax.swing.JScrollPane;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import javax.swing.DefaultListModel; import javax.swing.JFrame; import javax.swing.JList; import javax.swing.JScrollPane;
 
 
 public class Main {
@@ -356,7 +362,7 @@ public class Main {
                     incorrect1_lb.setForeground(Color.RED);
                     signup_panel.add(incorrect1_lb);
                     frame.repaint();
-                //if any text box contains more characters than it's supposed to it adds a label to say so
+                    //if any text box contains more characters than it's supposed to it adds a label to say so
                 } else if (email_length > 50 || password_length > 20 || forename_length > 20 || surname_length > 20
                         || houseNum_length > 10 || postcode_length > 20 || roadName_length > 100 || cityName_length > 100) {
                     JLabel incorrect2_lb = new JLabel("Please ensure your information does not exceed the length limit");
@@ -399,6 +405,8 @@ public class Main {
 
         //Creates account panel
         JPanel account_panel = new JPanel(null);
+
+
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_ac = new JLabel("Account");
@@ -476,6 +484,7 @@ public class Main {
         staff_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         account_panel.add(staff_bt);
 
+
         //Action listener for edit details button
         ActionListener staff_pressed = new ActionListener() {
             @Override
@@ -486,6 +495,7 @@ public class Main {
                 cardLayout.show(cardHolder, "StaffScreen");
             }
         };
+
 
 
 
@@ -810,6 +820,54 @@ public class Main {
         //Creates staff area panel
         JPanel staff_panel = new JPanel(null);
 
+        // creates table(showing stocking)
+        DefaultTableModel productModel = new DefaultTableModel();
+        productModel.addColumn("Product Code");
+        productModel.addColumn("Brand");
+        productModel.addColumn("Product Name");
+        productModel.addColumn("Price");
+        productModel.addColumn("Product Type");
+        productModel.addColumn("Quantity");
+        // 这部分代码可以放在显示 staff_panel 的事件监听器中或在您认为合适的任何地方
+        try {
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo"
+            );
+
+            String sql = "SELECT productCode, brand, productName, price, productType, quantity FROM Product";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String productCode = rs.getString("productCode");
+                String brand = rs.getString("brand");
+                String productName = rs.getString("productName");
+                double price = rs.getDouble("price");
+                String productType = rs.getString("productType");
+                int quantity = rs.getInt("quantity");
+
+                productModel.addRow(new Object[]{productCode, brand, productName, price, productType, quantity});
+            }
+
+            rs.close();
+            ps.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // 处理异常
+        }
+
+
+// 创建表格并将其添加到滚动面板中，然后添加到 staff_panel 中
+        // 创建表格并将其添加到滚动面板中，然后添加到 staff_panel 中
+        JTable productTable = new JTable(productModel);
+        JScrollPane productScrollPane = new JScrollPane(productTable); // 使用不同的变量名
+        productScrollPane.setBounds(300, 100, 800, 600); // 根据需要调整位置和大小
+        staff_panel.add(productScrollPane);
+
+
+
         //adds a title in the centre at the top in bold font size 40
         JLabel title_st = new JLabel("Staff Area");
         title_st.setBounds(500, 25, 600, 45);
@@ -821,6 +879,8 @@ public class Main {
         back_bt6.setBounds(1025, 10, 150, 75);
         back_bt6.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         staff_panel.add(back_bt6);
+
+
 
         //Action listener for back button
         ActionListener back_pressed6 = new ActionListener() {
@@ -837,6 +897,7 @@ public class Main {
         cInfo_bt.setBounds(815, 10, 200, 75);
         cInfo_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         staff_panel.add(cInfo_bt);
+
 
         //Action listener for customer info button
         ActionListener cInfo_pressed = new ActionListener() {
@@ -870,6 +931,8 @@ public class Main {
         oDetail_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         staff_panel.add(oDetail_bt);
 
+
+
         //Action listener for promote info button
         ActionListener oDetail_pressed = new ActionListener() {
             @Override
@@ -879,9 +942,6 @@ public class Main {
                 cardLayout.show(cardHolder, "OrderDetailScreen");
             }
         };
-
-
-
 
 
         //Creates customer info area panel
@@ -908,6 +968,7 @@ public class Main {
                 cardLayout.show(cardHolder, "StaffScreen");
             }
         };
+
 
         //adds Email: label
         JLabel email_lb_ci = new JLabel("Email:");
@@ -1107,6 +1168,7 @@ public class Main {
 
 
 
+
         //Creates order detail panel
         JPanel orderDetail_panel = new JPanel(null);
 
@@ -1122,6 +1184,8 @@ public class Main {
         back_bt11.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         orderDetail_panel.add(back_bt11);
 
+
+
         //Action listener for back button
         ActionListener back_pressed11 = new ActionListener() {
             @Override
@@ -1131,6 +1195,91 @@ public class Main {
                 cardLayout.show(cardHolder, "StaffScreen");
             }
         };
+
+// Add table
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("userID");
+        model.addColumn("email");
+        model.addColumn("Order ID");
+        model.addColumn("Order Date");
+        // Initialize the table model
+
+        model = new DefaultTableModel();
+        model.addColumn("userID");
+        model.addColumn("email");
+        model.addColumn("Order Number");
+        model.addColumn("Order Date");
+
+// Initialize JTable with the model
+        JTable table = new JTable(model);
+        orderDetail_panel.add(new JScrollPane(table)); // Add table to panel inside a scroll pane
+
+        try {
+            // Establish database connection
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo"
+            );
+
+            // JOIN query to retrieve user and their order details
+            String sql = "SELECT User.userID, User.email, Order1.orderNumber, Order1.orderDate " +
+                    "FROM User JOIN Order1 ON User.userID = Order1.userID";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            // Process ResultSet and add data to the model
+            while (rs.next()) {
+                int userID = rs.getInt("userID");
+                String email = rs.getString("email");
+                int orderNumber = rs.getInt("orderNumber");
+                Date orderDate = rs.getDate("orderDate");
+
+                model.addRow(new Object[]{userID, email, orderNumber, orderDate});
+            }
+
+            // Close resources
+            rs.close();
+            ps.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle exceptions appropriately
+        }
+
+
+
+// ... Other columns ...
+        JTable ordersTable = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(ordersTable);
+        scrollPane.setBounds(400, 100, 600, 500);
+        orderDetail_panel.add(scrollPane);
+
+// Add event listener to the table
+        ordersTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                // Display the detailed information of the selected order
+            }
+        });
+
+// Add fulfill and reject buttons
+        JButton fulfillButton = new JButton("Fulfill Order");
+        fulfillButton.setBounds(50, 100, 150, 30);
+        fulfillButton.addActionListener(e -> {
+            // Code to fulfill the order
+        });
+        orderDetail_panel.add(fulfillButton);
+
+        JButton rejectButton = new JButton("Reject Order");
+        rejectButton.setBounds(50, 150, 150, 30);
+        rejectButton.addActionListener(e -> {
+            // Code to reject the order
+        });
+        orderDetail_panel.add(rejectButton);
+
+// ... Configure the back button, etc. ...
+
+// Add orderDetail_panel to cardHolder
+        cardHolder.add(orderDetail_panel, "OrderDetailScreen");
 
 
 
@@ -1149,6 +1298,7 @@ public class Main {
         cardHolder.add(confirm_panel, "ConfirmScreen");
         cardHolder.add(promote_panel, "PromoteScreen");
         cardHolder.add(orderDetail_panel, "OrderDetailScreen");
+
 
         //Action listeners
         login_bt.addActionListener(login_pressed);
