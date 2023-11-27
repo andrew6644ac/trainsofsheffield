@@ -11,9 +11,9 @@ import java.util.*;
 
 public class OrderService {
     private static List<Order> ORDERS_FOR_STAFF_TO_PROCESS= new ArrayList<>();
-    private  Map<Integer, Order> userPendingOrders=new HashMap<>();
+    private static Map<Integer, Order> userPendingOrders=new HashMap<>();
 
-    public boolean addToOrder(Integer userId, String productCode, ProductType productType, int quantity, float productPrice) {
+    public static boolean addToOrder(Integer userId, String productCode, ProductType productType, int quantity, float productPrice) {
         boolean result=true;
         if (userId==null) throw new UnknownUserException("UserId cannot be null.");
         Order orderForUser=userPendingOrders.get(userId);
