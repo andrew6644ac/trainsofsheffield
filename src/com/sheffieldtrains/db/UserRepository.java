@@ -245,9 +245,9 @@ public class UserRepository extends Repository {
                 if (roleName!=null){
                     user.addRole(UserRole.valueOf(roleName));
                 }
+                BankDetail bankDetail=getBankDetail(user.getUserID());
+                user.setBankDetail(bankDetail);
             }
-            BankDetail bankDetail=getBankDetail(user.getUserID());
-            user.setBankDetail(bankDetail);
         } catch (SQLException ex) {
             throw new RuntimeException("Database error when trying to retrieve user information");
         } finally {
