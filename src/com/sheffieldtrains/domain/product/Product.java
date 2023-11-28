@@ -107,4 +107,11 @@ public class Product {
     }
 
 
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType=productType;
+    }
 }

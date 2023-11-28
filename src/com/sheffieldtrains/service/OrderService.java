@@ -39,7 +39,13 @@ public class OrderService {
         if (order==null) throw new UnknownOrderException();
         OrderLine orderLine= order.findOrderLine(productCode);
         if (orderLine==null)  throw new UnknownOrderLineException();
-        order.removeOrderLine(productCode);
+        if (quantity==0) {
+            order.removeOrderLine(productCode);
+        }
+        else {
+            orderLine.setQuantity(quantity);
+            orderLine.setPrice(quantity* orderLine.getPrice());
+        }
         if (order.isEmpty()){
                 userPendingOrders.remove(userId);
             }

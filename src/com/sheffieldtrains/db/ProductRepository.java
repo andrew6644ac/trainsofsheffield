@@ -31,6 +31,7 @@ public class ProductRepository extends Repository {
                     p.productName,
                     p.price,
                     p.gauge,
+                    p.productType,
                     lo.dccCode,
                     lo.eraCode,
                     p.quantity
@@ -47,6 +48,7 @@ public class ProductRepository extends Repository {
                     p.productName,
                     p.price,
                     p.gauge,
+                    p.productType,
                     p.quantity,
                     c.isDigital
                 FROM
@@ -62,6 +64,7 @@ public class ProductRepository extends Repository {
                 p.productName,
                 p.price,
                 p.gauge,
+                p.productType,
                 p.quantity,
                 r.eraCode,
                 r.type
@@ -78,6 +81,7 @@ public class ProductRepository extends Repository {
                     p.productName,
                     p.price,
                     p.gauge,
+                    p.productType,
                     p.quantity
                 FROM
                     team066.Product p
@@ -91,6 +95,7 @@ public class ProductRepository extends Repository {
                     p.productName,
                     p.price,
                     p.gauge,
+                    p.productType,
                     p.quantity,
                     tp.packContents,
                     tp.packType,
@@ -134,6 +139,7 @@ public class ProductRepository extends Repository {
                     p.productName,
                     p.price,
                     p.gauge,
+                    p.productType,
                     p.quantity,
                     ts.setContents,
                     ts.eraCode,
@@ -258,12 +264,14 @@ public class ProductRepository extends Repository {
         float  price=resultSet.getFloat("price");
         Gauge gauge =Gauge.valueOf(resultSet.getString("gauge"));
         int quantity= resultSet.getInt("quantity");
+        ProductType productType=ProductType.valueOf(resultSet.getString("productType").toUpperCase(Locale.ROOT));
         product.setProductCode(productCode);
         product.setBrand(brand);
         product.setProductName(productName);
         product.setPrice(price);
         product.setGauge(gauge);
         product.setQuantity(quantity);
+        product.setProductType(productType);
     }
 
     private static void loadControllers() throws SQLException {

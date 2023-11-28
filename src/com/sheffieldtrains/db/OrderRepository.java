@@ -29,7 +29,7 @@ public class OrderRepository extends Repository {
                         p.gauge,
                         p.productType
                     FROM
-                         team066.Order  o
+                         team066.Order1  o
                     JOIN team066.OrderLine  ol ON o.orderNumber = ol.orderNumber
                     JOIN team066.Product  p ON ol.productCode = p.productCode
                     WHERE
@@ -50,7 +50,7 @@ public class OrderRepository extends Repository {
                         p.price,
                         p.productType
                     FROM
-                         team066.Order  o 
+                         team066.Order1  o 
                     JOIN team066.User u ON o.userID = u.userID               
                     JOIN team066.OrderLine  ol ON o.orderNumber = ol.orderNumber
                     JOIN team066.Product  p ON ol.productCode = p.productCode
@@ -60,17 +60,17 @@ public class OrderRepository extends Repository {
 
     private static final String DELETE_ORDER_lINE_BY_USER_ID_SQL = """
                     DELETE FROM team066.OrderLine
-                    WHERE  orderNumber IN (SELECT orderNumber FROM Order WHERE userId=?)
+                    WHERE  orderNumber IN (SELECT orderNumber FROM Order1 WHERE userId=?)
                     """;
                     
     private static final String DELETE_ORDER_BY_USER_ID_SQL = """
-                    DELETE FROM team066.Order
+                    DELETE FROM team066.Order1
                     WHERE  userID=?
                    """;
 
 
     private static String INSERT_ORDER_SQL= """
-            INSERT INTO team066.Order (orderDate, status, userID)
+            INSERT INTO team066.Order1 (orderDate, status, userID)
             VALUES (?, ?, ?)
             """;
 
@@ -84,7 +84,7 @@ public class OrderRepository extends Repository {
         WHERE  orderNumber=?
 """;
     private static String DELETE_ORDER_BY_ORDER_ID_SQL="""
-        DELETE FROM team066.Order
+        DELETE FROM team066.Order1
         WHERE  orderNumber=?
 """;
 
@@ -93,7 +93,10 @@ public class OrderRepository extends Repository {
             PreparedStatement orderStmt=conn.prepareStatement(INSERT_ORDER_SQL, Statement.RETURN_GENERATED_KEYS);
             PreparedStatement orderLineStmt=conn.prepareStatement(INSERT_ORDER_LINE_SQL))  {
            conn.setAutoCommit(false);
-           orderStmt.setDate(1, (java.sql.Date) order.getOrderDate()); /*order parameters: orderDate, status, userID*/
+           java.util.Date utilDate = order.getOrderDate();
+           // Convert java.util.Date to java.sql.Date
+           java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+           orderStmt.setDate(1, /*(java.sql.Date)*/ sqlDate); /*order parameters: orderDate, status, userID*/
            orderStmt.setString(2, order.getStatus().toString());
            orderStmt.setInt(3, order.getUserId());
            int affectedRows =orderStmt.executeUpdate();
