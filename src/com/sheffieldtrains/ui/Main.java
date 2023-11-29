@@ -1,11 +1,19 @@
 package com.sheffieldtrains.ui;
 
+//import statements
+
+import com.sheffieldtrains.domain.order.Order;
+import com.sheffieldtrains.domain.order.OrderLine;
+import com.sheffieldtrains.domain.product.Product;
+import com.sheffieldtrains.domain.product.ProductType;
+import com.sheffieldtrains.domain.user.User;
+import com.sheffieldtrains.service.OrderService;
+
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.border.Border;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import java.sql.Connection;
@@ -14,105 +22,317 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
-import javax.swing.DefaultListModel; import javax.swing.JFrame; import javax.swing.JList; import javax.swing.JScrollPane;
+import java.util.Vector;
+import javax.swing.JFrame;
+
+import javax.swing.table.*;
+
+class ButtonColumn extends AbstractCellEditor implements TableCellRenderer, TableCellEditor, ActionListener {
+    private JTable table;
+    private JButton renderButton;
+    private JButton editButton;
+    private String text;
+    private DefaultTableModel basketModel;
+    private boolean isDeleteButton;
+    private boolean isAddButton;
+    private boolean isRemoveButton;
+
+    public ButtonColumn(JTable table, int column, DefaultTableModel basketModel,
+                        boolean isDeleteButton, boolean isAddButton, boolean isRemoveButton) {
+        super();
+        this.table = table;
+        this.basketModel = basketModel;
+        this.isDeleteButton = isDeleteButton;
+        this.isAddButton = isAddButton;
+        this.isRemoveButton = isRemoveButton;
+
+        renderButton = new JButton();
+        editButton = new JButton();
+        editButton.setFocusPainted(false);
+        editButton.addActionListener(this);
+
+        TableColumnModel columnModel = table.getColumnModel();
+        columnModel.getColumn(column).setCellRenderer(this);
+        columnModel.getColumn(column).setCellEditor(this);
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+        if (isAddButton) {
+            renderButton.setText("+");
+        } else if (isRemoveButton) {
+            renderButton.setText("-");
+        } else if (isDeleteButton) {
+            renderButton.setText("Delete");
+        } else {
+            renderButton.setText("Add to Basket");
+        }
+
+        return renderButton;
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(
+            JTable table, Object value, boolean isSelected, int row, int column) {
+
+        editButton.setText(value == null ? "" : value.toString());
+        return editButton;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+        return text;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        fireEditingStopped(); // Stop cell editing and save any changes.
+
+        int viewRow = table.getSelectedRow();
+        if (viewRow != -1) {
+            int modelRow = table.convertRowIndexToModel(viewRow);
+
+            if (isDeleteButton) {
+                basketModel.removeRow(modelRow);
+            } else if (isAddButton) {
+                int quantity = (Integer) basketModel.getValueAt(modelRow, 5);
+                basketModel.setValueAt(quantity + 1, modelRow, 5);
+            } else if (isRemoveButton) {
+                int quantity = (Integer) basketModel.getValueAt(modelRow, 5);
+                if (quantity > 1) {
+                    basketModel.setValueAt(quantity - 1, modelRow, 5);
+                }
+            } else {
+                // Assume this is the Add to Basket operation.
+                DefaultTableModel model = (DefaultTableModel) table.getModel();
+                Object[] rowData = new Object[6];
+                for (int i = 0; i < 5; i++) {
+                    rowData[i] = model.getValueAt(modelRow, i);
+                }
+                rowData[5] = 1; // Initial quantity set to 1.
+                basketModel.addRow(rowData);
+            }
+
+            table.revalidate();
+            table.repaint();
+        }
+    }
+}
+
 
 
 public class Main {
+    // Class-level variables for card layout
+    private static JPanel cardHolder = new JPanel(new CardLayout());
+    private static CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+
+   /* private static DefaultTableModel tableModel = new DefaultTableModel();
+    private static JTable table = new JTable(tableModel);*/
+
+
+    private static DefaultTableModel rollingStockModel;
+    private static JTable rollingStockTable;
+
+
+    private static DefaultTableModel controllerModel;
+    private static JTable controllerTable;
+
+
+    private static DefaultTableModel trackModel;
+    private static JTable trackTable;
+
+    private static DefaultTableModel trackPackModel;
+    private static JTable trackPackTable;
+
+
+    private static DefaultTableModel  trainSetModel;
+    private static JTable trainSetTable ;
+
+    // ... existing class-level variables ...
+     static DefaultTableModel basketTableModel = new DefaultTableModel(new String[]{"Product Code", "Brand", "Product Name", "Product Type", "Price","Quantity", "Increase", "Reduce", "Remove Item"}, 0);
+     static JTable basketTable = new JTable(basketTableModel);
+
+
+    // 计算购物车总价的方法
+    public static double calculateTotalPrice(DefaultTableModel model) {
+        double totalPrice = 0.0;
+        for (int i = 0; i < model.getRowCount(); i++) {
+            double price = 0.0;
+            int quantity = 0;
+            try {
+                price = Double.parseDouble(model.getValueAt(i, 4).toString()); // 假设第五列是价格列
+                quantity = Integer.parseInt(model.getValueAt(i, 5).toString()); // 假设第六列是数量列
+                totalPrice += price * quantity; // 价格乘以数量
+            } catch (NumberFormatException nfe) {
+                System.err.println("无法解析价格或数量: " + nfe.getMessage());
+            }
+        }
+        return totalPrice;
+    }
+
+
+    // 添加这个方法到 Main 类里面，但是在 main 方法之外
+    // Add this method to the Main class, but outside of the main method
+     static JButton createBackButton(String backPanelName) {
+        JButton backButton = new JButton("Back");
+        backButton.setPreferredSize(new Dimension(150, 75)); // Set the preferred size
+        backButton.setFont(new Font("Times New Roman", Font.BOLD, 24)); // Set the font size
+        backButton.setMargin(new Insets(10, 20, 10, 20)); // Set the padding
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(cardHolder, backPanelName);
+            }
+        });
+        return backButton;
+    }
+
+
+
     public static void main(String[] args) {
-
         LoggedIn loggedIn = new LoggedIn();
-
         //Creates window with name in title bar and sets size of window
         JFrame frame = new JFrame("Trains Of Sheffield");
         frame.setSize(1200, 800);
 
         //creates a cardholder panel to hold all screens within
-        JPanel cardHolder = new JPanel(new CardLayout());
 
 
 
-        //creates a login page panel
-        JPanel login_panel = new JPanel(null);
+        // ------locomotive
+        /*tableModel.addColumn("Product Code");
+        tableModel.addColumn("Brand");
+        tableModel.addColumn("Product Name");
+        tableModel.addColumn("Product Type");
+        tableModel.addColumn("Price");
+        tableModel.addColumn("Quantity");
+        tableModel.addColumn("Gauge");
+        tableModel.addColumn("Add to Basket");
+// 添加示例数据，这里您可以连接数据库并加载真实数据
+        tableModel.addRow(new Object[]{"L001", "Hornby", "Class A3 \"Flying Scotsman\"","Locomotive", "199.99", "OO_GAUGE", "5", "Add to Basket"});
+        tableModel.addRow(new Object[]{"L002", "Hornby", "Class A4 \"Mallard\"","Locomotive",  "220.99", "OO_GAUGE","7", "Add to Basket"});*/
 
-        //adds a title in the centre at the top in bold font size 40
-        JLabel title = new JLabel("Trains Of Sheffield");
-        title.setBounds(450, 25, 600, 30);
-        title.setFont(new Font("Times New Roman", Font.BOLD, 40));
-        login_panel.add(title);
 
-        //adds email label
-        JLabel email_lb = new JLabel("Please enter your email:");
-        email_lb.setBounds(405, 100, 200, 30);
-        email_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        login_panel.add(email_lb);
+// 创建包含表格的面板，并将其添加到 cardHolder
+       /* JPanel locomotivePanel = new JPanel(new BorderLayout());
+        JScrollPane scrollPane = new JScrollPane(table);
+        locomotivePanel.add(scrollPane, BorderLayout.CENTER);
 
-        //adds email text box
-        JTextField email_tb = new JTextField(20);
-        email_tb.setBounds(600, 100, 300, 30);
-        login_panel.add(email_tb);
+        locomotivePanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);*/
+        LocomotivePanel locomotivePanel = new LocomotivePanel("LocomotivePanel", cardHolder, frame);
+//        cardHolder.add(locomotivePanel, "LocomotivePanel");
 
-        //adds password label
-        JLabel password_lb = new JLabel("Please enter your password:");
-        password_lb.setBounds(405, 150, 250, 30);
-        password_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        login_panel.add(password_lb);
+        // The ButtonColumn needs to know which table model is the basket model, so it can add rows to it
+//        ButtonColumn addButtonColumn = new ButtonColumn(table, 7, basketTableModel, false,false,false);
+        ButtonColumn addButtonColumn = new ButtonColumn(locomotivePanel.getTable(), locomotivePanel.getTable().getColumnCount()-1, basketTableModel, false,false,false);
 
-        //adds password text box
-        JTextField password_tb = new JTextField(20);
-        password_tb.setBounds(630, 150, 270, 30);
-        login_panel.add(password_tb);
 
-        //adds login button
-        JButton login_bt = new JButton("Login");
-        login_bt.setBounds(425, 650, 150, 75);
-        login_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
-        login_panel.add(login_bt);
+      /*  // -------- RollingStock Table Model --------
+        DefaultTableModel rollingStockModel = new DefaultTableModel(new String[]{"Product Code", "Brand", "Product Name", "Product Type", "Price", "Quantity","Gauge", "Add to Basket"}, 0);
+        rollingStockModel.addRow(new Object[]{"S001", "Bachmann", "GWR Toad Guards Van", "34.99", "RollingStock", "4", "OO_GAUGE"});
+        rollingStockModel.addRow(new Object[]{"S002", "Bachmann", "LNER Gresley Composite Coach", "45.99", "RollingStock", "3", "TT_GAUGE"});
+        rollingStockModel.addRow(new Object[]{"S003", "Bachmann", "BR Mark 1 Coach", "42.99", "RollingStock", "5", "N_GAUGE"});
 
-        //adds sign up button
-        JButton signup_bt = new JButton("Sign up");
-        signup_bt.setBounds(625, 650, 150, 75);
-        signup_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
-        login_panel.add(signup_bt);
+        //rollingStockTable
+        rollingStockTable = new JTable(rollingStockModel);
+        ButtonColumn addButtonColumnRollingStock = new ButtonColumn(rollingStockTable, 7, basketTableModel, false,false,false);
+        JScrollPane rollingStockScrollPane = new JScrollPane(rollingStockTable);
+        JPanel rollingStockPanel = new JPanel(new BorderLayout());
+        rollingStockPanel.add(rollingStockScrollPane, BorderLayout.CENTER);
+        rollingStockPanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);
+        cardHolder.add(rollingStockPanel, "RollingStockPanel");*/
 
-        //Action listener for login button
-        ActionListener login_pressed = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //checks email and password when button is pressed and changes screen if correct
-                String email_input_lg = email_tb.getText();
-                String password_input_lg = password_tb.getText();
-                //Need to check email exists in DB if exists get password and check if matches with entered password.
-                if ((email_input_lg.equals("email") || email_input_lg.equals("staff")  || email_input_lg.equals("manager")) && password_input_lg.equals("password")) {
-                    CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
-                    cardLayout.show(cardHolder, "MenuScreen");
-                    loggedIn.email = email_input_lg;
-                } else {
-                    //Creates label to say incorrect input
-                    JLabel incorrect_lb = new JLabel("Email or Password is incorrect.");
-                    incorrect_lb.setBounds(450, 400, 400, 30);
-                    incorrect_lb.setFont(new Font("Times New Roman", Font.BOLD, 25));
-                    incorrect_lb.setForeground(Color.RED);
-                    login_panel.add(incorrect_lb);
-                    frame.repaint();
-                }
+        RollingStockPanel rollingStockPanel=new RollingStockPanel("RollingStockPanel", cardHolder, frame);
+        ButtonColumn addButtonColumnRollingStock = new ButtonColumn(rollingStockPanel.getTable(), rollingStockPanel.getTable().getColumnCount()-1, basketTableModel, false,false,false);
 
-            }
-        };
+        // -------- Controller Table Model --------
+       /* DefaultTableModel controllerModel = new DefaultTableModel(new String[]{"Product Code", "Brand", "Product Name",  "Product Type", "Price", "Quantity", "Gauge","Add to Basket"}, 0);
+        controllerModel.addRow(new Object[]{"C001", "GenericBrand", "Standard Controller", "27.99", "Controller", "3"});
+        controllerModel.addRow(new Object[]{"C002", "GenericBrand", "DCC Controller", "58.99", "Controller", "5"});
+        controllerModel.addRow(new Object[]{"C003", "GenericBrand", "DCC Elite Controller", "75.99", "Controller", "9"});
 
-        //Action listener for signup button
-        ActionListener signup_pressed = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //changes screen to signup Screen
-                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
-                cardLayout.show(cardHolder, "SignupScreen");
-            }
-        };
+
+        // Controller Table
+        controllerTable = new JTable(controllerModel);
+        ButtonColumn addButtonColumnController = new ButtonColumn(controllerTable, 7, basketTableModel, false,false,false);
+        JScrollPane controllerScrollPane = new JScrollPane(controllerTable);
+        JPanel controllerPanel = new JPanel(new BorderLayout());
+        controllerPanel.add(controllerScrollPane, BorderLayout.CENTER);
+        controllerPanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);
+        cardHolder.add(controllerPanel, "ControllerPanel");*/
+        ControllerPanel controllerPanel = new ControllerPanel("ControllerPanel", cardHolder, frame);
+        ButtonColumn addButtonColumnController = new ButtonColumn(controllerPanel.getTable(),
+                                                            controllerPanel.getTable().getColumnCount()-1,
+                                                                    basketTableModel,
+                                                        false,
+                                                            false,
+                                                        false);
+
+
+        // -------- Track Table Model --------
+       /* DefaultTableModel trackModel = new DefaultTableModel(new String[]{"Product Code", "Brand", "Product Name", "Product Type", "Price","Quantity", "Gauge","Add to Basket"}, 0);
+        trackModel.addRow(new Object[]{"R001", "Peco", "2nd Radius Starter Oval", "15.99", "Track", "6", "OO_GAUGE"});
+        trackModel.addRow(new Object[]{"R002", "Peco", "3rd Radius Starter Oval", "17.99", "Track", "7", "TT_GAUGE"});
+        trackModel.addRow(new Object[]{"R003", "Peco", "4th Radius Starter Oval", "19.99", "Track", "9", "N_GAUGE"});
 
 
 
+        // Track Table
+        trackTable = new JTable(trackModel);
+        ButtonColumn addButtonColumnTrack = new ButtonColumn(trackTable, 7, basketTableModel, false,false,false);
+        JScrollPane trackScrollPane = new JScrollPane(trackTable);
+        JPanel trackPanel = new JPanel(new BorderLayout());
+        trackPanel.add(trackScrollPane, BorderLayout.CENTER);
+        trackPanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);
+        cardHolder.add(trackPanel, "TrackPanel");*/
+
+        TrackPanel trackPanel = new TrackPanel("TrackPanel", cardHolder, frame);
+        ButtonColumn addButtonColumnTrack = new ButtonColumn(trackPanel.getTable(), trackPanel.getTable().getColumnCount()-1, basketTableModel, false,false,false);
 
 
+        // -------- Track Table Model --------
+
+        /*DefaultTableModel trackPackModel = new DefaultTableModel(new String[]{"Product Code", "Brand", "Product Name", "Product Type", "Price", "Quantity", "Gauge","Add to Basket"}, 0);
+        trackPackModel.addRow(new Object[]{"P001", "PackBrand", "Starter Pack", "39.99", "TrackPack", "4", "OO_GAUGE"});
+        trackPackModel.addRow(new Object[]{"P002", "PackBrand", "Extension Pack A", "49.99", "TrackPack", "4", "TT_GAUGE"});
+        trackPackModel.addRow(new Object[]{"P003", "PackBrand", "Expansion Pack B", "59.99", "TrackPack", "2", "N_GAUGE"});
+// ... Add to JScrollPane and JPanel as before ...
+        // Track Pack Table
+        trackPackTable = new JTable(trackPackModel);
+        ButtonColumn addButtonColumnTrackPack = new ButtonColumn(trackPackTable, 7, basketTableModel, false,false,false);
+        JScrollPane trackPackScrollPane = new JScrollPane(trackPackTable);
+        JPanel trackPackPanel = new JPanel(new BorderLayout());
+        trackPackPanel.add(trackPackScrollPane, BorderLayout.CENTER);
+        trackPackPanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);
+        cardHolder.add(trackPackPanel, "TrackPackPanel");*/
+
+        TrackPackPanel trackPackPanel = new TrackPackPanel("TrackPackPanel", cardHolder, frame);
+        ButtonColumn addButtonColumnTrackPack = new ButtonColumn(trackPackPanel.getTable(), trackPackPanel.getTable().getColumnCount()-1, basketTableModel, false,false,false);
+
+
+
+        // -------- Train Set Table Model --------
+      /*  DefaultTableModel trainSetModel = new DefaultTableModel(new String[]{"Product Code", "Brand", "Product Name", "Product Type", "Price","Quantity", "Gauge","Add to Basket"}, 0);
+        trainSetModel.addRow(new Object[]{"M001", "Eurostar", "Eurostar Train Set", "TrainSet","399.99", "7",  "OO_GAUGE", });
+        trainSetModel.addRow(new Object[]{"M002", "Mallard", "Mallard Record Breaker Train Set","TrainSet", "349.99", "5",  "OO_GAUGE", });
+        trainSetModel.addRow(new Object[]{"M003", "FlyingScotsman", "Flying Scotsman Train Set", "TrainSet","299.99","9", "OO_GAUGE",});
+        // Train Set Table
+        trainSetTable = new JTable(trainSetModel);
+        ButtonColumn addButtonColumnTrainSet = new ButtonColumn(trainSetTable, 7, basketTableModel, false,false,false);
+        JScrollPane trainSetScrollPane = new JScrollPane(trainSetTable);
+        JPanel trainSetPanel = new JPanel(new BorderLayout());
+        trainSetPanel.add(trainSetScrollPane, BorderLayout.CENTER);
+        trainSetPanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);
+        cardHolder.add(trainSetPanel, "TrainSetPanel");*/
+
+        TrainSetPanel trainSetPanel = new TrainSetPanel("TrainSetPanel", cardHolder, frame);
+        ButtonColumn addButtonColumnTrainSet = new ButtonColumn(trainSetPanel.getTable(), trainSetPanel.getTable().getColumnCount()-1, basketTableModel, false,false,false);
+
+
+        //set up login panel
+        JPanel login_panel = new LoginPanel("LoginScreen", cardHolder, frame);
 
         //Creates a main menu panel
         JPanel menu_panel = new JPanel(null);
@@ -149,44 +369,183 @@ public class Main {
             }
         };
 
+        if (Main.basketTableModel.getColumnCount() == 0) {
+        }
+
+
+// 为删除按钮添加事件处理器
+        // Delete button for the basket table
+        ButtonColumn deleteButtonColumn = new ButtonColumn(basketTable, 8, basketTableModel, true,false,false){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // This stops any cell editing that is currently happening
+                fireEditingStopped();
+
+                // Get the selected row from the view
+                int viewRow = basketTable.getSelectedRow();
+
+                // Only proceed if a row is actually selected
+                if (viewRow != -1) {
+                    // Convert the row index from the view's coordinate system to the model's
+                    int modelRow = basketTable.convertRowIndexToModel(viewRow);
+
+                    // Remove the row from the model
+                    basketTableModel.removeRow(modelRow);
+
+                    // Notify the table that the model data has changed and repaint the table
+                    basketTable.revalidate();
+                    basketTable.repaint();
+                }
+            }
+        };
+// 创建按钮列
+        ButtonColumn addQuantityButtonColumn = new ButtonColumn(basketTable, 6, basketTableModel, false, true, false);
+        ButtonColumn removeQuantityButtonColumn = new ButtonColumn(basketTable, 7, basketTableModel, false, false, true);
+// 设置列的首选宽度，如果需要的话
+// 例如：Main.basketTable.getColumnModel().getColumn(0).setPreferredWidth(100);
+
+// 创建包含篮子表格的滚动窗格
+        JScrollPane basketScrollPane = new JScrollPane(Main.basketTable);
+
+// 创建将包含篮子表格的面板
+        JPanel basketPanel = new JPanel(new BorderLayout());
+        basketPanel.add(basketScrollPane, BorderLayout.CENTER);
+
+// 添加'返回'按钮到面板
+        basketPanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);
+
+// 将篮子面板添加到卡片布局容器
+        cardHolder.add(basketPanel, "BasketPanel");
+
+
+
+
         //adds view basket button
         JButton viewBasket_bt = new JButton("View Basket");
         viewBasket_bt.setBounds(480, 680, 250, 75);
-        viewBasket_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        viewBasket_bt.setFont(new Font("Times New Roman", Font.BOLD, 25));
         menu_panel.add(viewBasket_bt);
+// 在basketPanel上方预留一个位置来放置总价标签
+        JLabel totalPriceLabel = new JLabel("Total Price: $0.00");
+        totalPriceLabel.setFont(new Font("Times New Roman", Font.BOLD, 18));
+        totalPriceLabel.setBounds(300, 680, 250, 75);
+// 添加确认订单的按钮
+        JButton confirmOrderButton = new JButton("Confirm Order");
+        confirmOrderButton.setFont(new Font("Times New Roman", Font.BOLD, 25));
+        confirmOrderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 计算购物车总价
+            /*    double totalPrice = calculateTotalPrice(basketTableModel);
+
+                // 输出总价以供调试
+                System.out.println("计算的总价: $" + String.format("%.2f", totalPrice));
+
+                // 更新总价标签的文本
+                totalPriceLabel.setText("Total Price: $" + String.format("%.2f", totalPrice));*/
+                Order order=createOrderFromTableModel(basketTableModel);
+                if (!order.isEmpty()) {
+                    OrderService.confirmOrderForUser(UserSession.getCurrentUser().getUserId(), order);
+                }
+                basketTableModel.setRowCount(0);
+                cardLayout.show(cardHolder, "MenuScreen");
+                }
+        });
+
+
+
+// 创建一个面板来容纳总价标签和按钮
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+
+// 添加总价标签到底部面板的北部
+        bottomPanel.add(totalPriceLabel, BorderLayout.CENTER);
+
+// 创建一个新的面板来容纳"Back"和"Confirm Order"按钮
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+// 设置按钮的首选大小
+        confirmOrderButton.setPreferredSize(new Dimension(250, 75));
+        viewBasket_bt.setPreferredSize(new Dimension(250, 75));
+
+// 将"Back"按钮和"Confirm Order"按钮添加到按钮面板
+        buttonPanel.add(createBackButton("MenuScreen"));
+        buttonPanel.add(confirmOrderButton);
+
+// 将按钮面板添加到底部面板的南部
+        bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+// 将底部面板添加到购物车面板的底部
+        basketPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+// 刷新界面以显示添加的组件
+        basketPanel.revalidate();
+        basketPanel.repaint();
+
+
+
 
         //Action listener for account button
         ActionListener viewBasket_pressed = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //changes screen to basket Screen
-                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
-                cardLayout.show(cardHolder, "BasketScreen");
+                // Switch to the basket panel to show the table
+                cardLayout.show(cardHolder, "BasketPanel");
             }
         };
 
 
-        //todo
+
         //adds temp label
-        JLabel temp_lb = new JLabel("selected item is: Locomotive");
-        temp_lb.setBounds(405, 150, 250, 30);
-        temp_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        JLabel temp_lb = new JLabel("Select Category to View Product");
+        temp_lb.setBounds(450, 150, 350, 30);
+        temp_lb.setFont(new Font("Times New Roman", Font.BOLD, 20));
         menu_panel.add(temp_lb);
 
         String[] stock_types = {"Locomotive", "Rolling Stock", "Controller", "Track", "Track Pack", "Train Set"};
         JComboBox<String> stock_sort_CB = new JComboBox<>(stock_types);
+        // ... [添加 JComboBox 相关代码之后]
+
+        stock_sort_CB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 获取选中的项
+                String stock_selected = (String) stock_sort_CB.getSelectedItem();
+                temp_lb.setText("Selected Category is: " + stock_selected);
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                // 如果选中了 "Locomotive"，显示表格面板
+                if ("Locomotive".equals(stock_selected)) {
+                    cardLayout.show(cardHolder, "LocomotivePanel");
+                } else if ("Rolling Stock".equals(stock_selected)) {
+                    cardLayout.show(cardHolder, "RollingStockPanel");
+                } else if ("Controller".equals(stock_selected)) {
+                    cardLayout.show(cardHolder, "ControllerPanel");
+                } else if ("Track".equals(stock_selected)) {
+                    cardLayout.show(cardHolder, "TrackPanel");
+                } else if ("Track Pack".equals(stock_selected)) {
+                    cardLayout.show(cardHolder, "TrackPackPanel");
+                } else if ("Train Set".equals(stock_selected)) {
+                    cardLayout.show(cardHolder, "TrainSetPanel");
+                }
+// 注意，对于每个选项，您需要创建并添加一个对应的面板到cardHolder中。
+
+                menu_panel.repaint();
+            }
+        });
+
+// ... [添加其余组件的代码]
+
 
         stock_sort_CB.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Get the selected item
                 String stock_selected = (String) stock_sort_CB.getSelectedItem();
-                temp_lb.setText("selected item is: " + stock_selected);
+                temp_lb.setText("Selected Category is: " + stock_selected);
                 menu_panel.repaint();
             }
         });
 
-        stock_sort_CB.setBounds(900, 100, 200, 100);
+        stock_sort_CB.setBounds(510, 150, 180, 150);
         menu_panel.add(stock_sort_CB);
         menu_panel.repaint();
 
@@ -195,12 +554,9 @@ public class Main {
         //can update labels not delete and replace
 
 
-
-
-
-
         //Creates sign up panel
-        JPanel signup_panel = new JPanel(null);
+        /*JPanel signup_panel = new JPanel(null);*/
+        JPanel signup_panel = new SignUpPanel( "SignupScreen", cardHolder,  frame);
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_su = new JLabel("Sign Up");
@@ -223,190 +579,10 @@ public class Main {
                 cardLayout.show(cardHolder, "LoginScreen");
             }
         };
-
-        //adds email label
-        JLabel email_lb_su = new JLabel("Email:");
-        email_lb_su.setBounds(525, 100, 200, 30);
-        email_lb_su.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        signup_panel.add(email_lb_su);
-
-        //adds email text box
-        JTextField email_tb_su = new JTextField(20);
-        email_tb_su.setBounds(580, 100, 300, 30);
-        signup_panel.add(email_tb_su);
-
-        //adds password label
-        JLabel password_lb_su = new JLabel("Password:");
-        password_lb_su.setBounds(498, 150, 250, 30);
-        password_lb_su.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        signup_panel.add(password_lb_su);
-
-        //adds password text box
-        JTextField password_tb_su = new JTextField(20);
-        password_tb_su.setBounds(580, 150, 270, 30);
-        signup_panel.add(password_tb_su);
-
-        //adds forename label
-        JLabel forename_lb = new JLabel("Forename:");
-        forename_lb.setBounds(494, 200, 250, 30);
-        forename_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        signup_panel.add(forename_lb);
-
-        //adds forename text box
-        JTextField forename_tb = new JTextField(20);
-        forename_tb.setBounds(580, 200, 270, 30);
-        signup_panel.add(forename_tb);
-
-        //adds surname label
-        JLabel surname_lb = new JLabel("Surname:");
-        surname_lb.setBounds(503, 250, 250, 30);
-        surname_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        signup_panel.add(surname_lb);
-
-        //adds surname text box
-        JTextField surname_tb = new JTextField(20);
-        surname_tb.setBounds(580, 250, 270, 30);
-        signup_panel.add(surname_tb);
-
-        //adds surname label
-        JLabel postcode_lb = new JLabel("Postcode:");
-        postcode_lb.setBounds(502, 300, 250, 30);
-        postcode_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        signup_panel.add(postcode_lb);
-
-        //adds surname text box
-        JTextField postcode_tb = new JTextField(20);
-        postcode_tb.setBounds(580, 300, 270, 30);
-        signup_panel.add(postcode_tb);
-
-
-        //These are for the Address table:
-        //adds house number label
-        JLabel houseNumber_lb = new JLabel("House Number:");
-        houseNumber_lb.setBounds(453, 350, 250, 30);
-        houseNumber_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        signup_panel.add(houseNumber_lb);
-
-        //adds house number text box
-        JTextField houseNumber_tb = new JTextField(20);
-        houseNumber_tb.setBounds(580, 350, 270, 30);
-        signup_panel.add(houseNumber_tb);
-
-        //adds road name label
-        JLabel roadName_lb = new JLabel("Road Name:");
-        roadName_lb.setBounds(480, 400, 250, 30);
-        roadName_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        signup_panel.add(roadName_lb);
-
-        //adds road name text box
-        JTextField roadName_tb = new JTextField(20);
-        roadName_tb.setBounds(580, 400, 270, 30);
-        signup_panel.add(roadName_tb);
-
-        //adds City name label
-        JLabel cityName_lb = new JLabel("City Name:");
-        cityName_lb.setBounds(488, 450, 250, 30);
-        cityName_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-        signup_panel.add(cityName_lb);
-
-        //adds City name text box
-        JTextField cityName_tb = new JTextField(20);
-        cityName_tb.setBounds(580, 450, 270, 30);
-        signup_panel.add(cityName_tb);
-
-        //adds sign up button
-        JButton signUp_bt = new JButton("Sign Up");
-        signUp_bt.setBounds(525, 650, 150, 75);
-        signUp_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
-        signup_panel.add(signUp_bt);
-
-        //Action listener for sign up button
-        ActionListener signUp_pressed = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //gets text from text boxes
-                String email_input_su = email_tb_su.getText();
-                String password_input_su = password_tb_su.getText();
-                String forename_input = forename_tb.getText();
-                String surname_input = surname_tb.getText();
-                String postcode_input = postcode_tb.getText();
-                String houseNum_input = houseNumber_tb.getText();
-                String roadName_input = roadName_tb.getText();
-                String cityName_input = cityName_tb.getText();
-
-                //converts strings to arrays and finds lengths
-                char[] email_array = email_input_su.toCharArray();
-                int email_length = email_array.length;
-                char[] password_array = password_input_su.toCharArray();
-                int password_length = password_array.length;
-                char[] forename_array = forename_input.toCharArray();
-                int forename_length = forename_array.length;
-                char[] surname_array = surname_input.toCharArray();
-                int surname_length = surname_array.length;
-                char[] postcode_array = postcode_input.toCharArray();
-                int postcode_length = postcode_array.length;
-                char[] houseNum_array = houseNum_input.toCharArray();
-                int houseNum_length = houseNum_array.length;
-                char[] roadName_array = roadName_input.toCharArray();
-                int roadName_length = roadName_array.length;
-                char[] cityName_array = cityName_input.toCharArray();
-                int cityName_length = cityName_array.length;
-
-                //if any text box is empty adds label to say so
-                if (email_input_su.isBlank() || password_input_su.isBlank() || forename_input.isBlank()
-                        || surname_input.isBlank() || postcode_input.isBlank() || houseNum_input.isBlank()
-                        || roadName_input.isBlank() || cityName_input.isBlank()) {
-                    JLabel incorrect1_lb = new JLabel("Please ensure you have entered valid information");
-                    incorrect1_lb.setBounds(415, 550, 900, 30);
-                    incorrect1_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-                    incorrect1_lb.setForeground(Color.RED);
-                    signup_panel.add(incorrect1_lb);
-                    frame.repaint();
-                    //if any text box contains more characters than it's supposed to it adds a label to say so
-                } else if (email_length > 50 || password_length > 20 || forename_length > 20 || surname_length > 20
-                        || houseNum_length > 10 || postcode_length > 20 || roadName_length > 100 || cityName_length > 100) {
-                    JLabel incorrect2_lb = new JLabel("Please ensure your information does not exceed the length limit");
-                    incorrect2_lb.setBounds(390, 600, 900, 30);
-                    incorrect2_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
-                    incorrect2_lb.setForeground(Color.RED);
-                    signup_panel.add(incorrect2_lb);
-                    frame.repaint();
-                    //todo check if info is already existing
-
-                } else {
-                    /*try {
-                        //an example showing how to register a new user. If an user with the same email exists,
-                        //an UserAlreadyExistException wil be thrown. Need to do something about it.
-                        User user = UserService.registerUser(email_input_su,
-                                password_input_su,
-                                forename_input,
-                                surname_input,
-                                houseNum_input,
-                                roadName_input,
-                                cityName_input,
-                                postcode_input);
-                        System.out.println("User registered");
-                    }
-                    catch(UserAlreadyExistException ex){
-                        //todo: if the email id is already used, need to tell that such an user exists already. A pop up screen maybe?? .
-                        System.out.println("User already exists");
-                    }*/
-                    CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
-                    cardLayout.show(cardHolder, "LoginScreen");
-                }
-            }
-        };
-
-
-
-
-
-
+        
 
         //Creates account panel
         JPanel account_panel = new JPanel(null);
-
-
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_ac = new JLabel("Account");
@@ -484,7 +660,6 @@ public class Main {
         staff_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         account_panel.add(staff_bt);
 
-
         //Action listener for edit details button
         ActionListener staff_pressed = new ActionListener() {
             @Override
@@ -495,10 +670,6 @@ public class Main {
                 cardLayout.show(cardHolder, "StaffScreen");
             }
         };
-
-
-
-
 
 
 
@@ -828,13 +999,14 @@ public class Main {
         productModel.addColumn("Price");
         productModel.addColumn("Product Type");
         productModel.addColumn("Quantity");
-        // 这部分代码可以放在显示 staff_panel 的事件监听器中或在您认为合适的任何地方
+        productModel.addColumn("Gauge");
+
         try {
             Connection conn = DriverManager.getConnection(
                     "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo"
             );
 
-            String sql = "SELECT productCode, brand, productName, price, productType, quantity FROM Product";
+            String sql = "SELECT productCode, brand, productName, price, productType, quantity,gauge FROM Product";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
@@ -845,8 +1017,9 @@ public class Main {
                 double price = rs.getDouble("price");
                 String productType = rs.getString("productType");
                 int quantity = rs.getInt("quantity");
+                String gauge = rs.getString("gauge");
 
-                productModel.addRow(new Object[]{productCode, brand, productName, price, productType, quantity});
+                productModel.addRow(new Object[]{productCode, brand, productName, price, productType,quantity, gauge});
             }
 
             rs.close();
@@ -855,18 +1028,131 @@ public class Main {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            // 处理异常
+
         }
 
-
-// 创建表格并将其添加到滚动面板中，然后添加到 staff_panel 中
-        // 创建表格并将其添加到滚动面板中，然后添加到 staff_panel 中
+        // Create the table and add it to the scroll panel, then add it to the staff_panel
         JTable productTable = new JTable(productModel);
-        JScrollPane productScrollPane = new JScrollPane(productTable); // 使用不同的变量名
-        productScrollPane.setBounds(300, 100, 800, 600); // 根据需要调整位置和大小
+        JScrollPane productScrollPane = new JScrollPane(productTable);
+        productScrollPane.setBounds(300, 100, 800, 600);
         staff_panel.add(productScrollPane);
 
+        // creat Update changes button
+        JButton confirmButton1 = new JButton("Update Changes");
+        confirmButton1.setBounds(50, 500, 200, 50);
+        confirmButton1.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+        staff_panel.add(confirmButton1);
+        // creat Reload product button
+        JButton refreshButton = new JButton("Reload Product");
+        refreshButton.setBounds(50, 600, 200, 50);
+        refreshButton.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+        staff_panel.add(refreshButton);
+        //creat Add new product button
+        JButton addItemButton = new JButton("Add New Product");
+        addItemButton.setBounds(50, 200, 200, 50); // 设置按钮位置和大小
+        addItemButton.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+        staff_panel.add(addItemButton);
+        //creat save new product button
+        JButton insertDataButton = new JButton("Save New Product");
+        insertDataButton.setBounds(50, 300, 200, 50); // 设置按钮的位置和大小
+        insertDataButton.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+        staff_panel.add(insertDataButton);
+        //creat Delete selected product button
+        JButton deleteButton = new JButton("Delete Selected Product");
+        deleteButton.setBounds(50, 400, 200, 50);
+        deleteButton.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+        staff_panel.add(deleteButton);
 
+        //Action listener for Reload Button(also called refresh button)
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                refreshProductTable(productModel);
+            }
+        });
+        staff_panel.add(refreshButton);
+
+        //Action listener for add new product button(also called additem button)
+        addItemButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Add a new row to the table with the number of columns matching the number of columns in the table
+                productModel.addRow(new Object[]{"", "", "", "", "", "",""});
+            }
+        });
+
+        //Action listener for Delete selected button(also call insertdata button)
+        insertDataButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Gets the last row of the table (the newly added row)
+                int lastRow = productModel.getRowCount() - 1;
+
+                // Get data from a table
+                String productCode = (String) productModel.getValueAt(lastRow, 0);
+                String brand = (String) productModel.getValueAt(lastRow, 1);
+                String productName = (String) productModel.getValueAt(lastRow, 2);
+                Double price = null;
+                Integer quantity = null;
+                String gauge = (String) productModel.getValueAt(lastRow, 6);
+
+                // Converts strings to Double and Integer
+                try {
+                    price = Double.parseDouble(productModel.getValueAt(lastRow, 3).toString());
+                    quantity = Integer.parseInt(productModel.getValueAt(lastRow, 5).toString());
+                } catch (NumberFormatException ex) {
+                    // Process conversion error
+                    JOptionPane.showMessageDialog(frame, "Invalid number format in Price or Quantity.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                String productType = (String) productModel.getValueAt(lastRow, 4);
+
+                // Call method to insert data into the database
+                insertNewProductInDatabase(productCode, brand, productName, price, productType, quantity, gauge);
+            }
+        });
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteSelectedProduct(productTable, productModel);
+            }
+        });
+
+
+        //Action listener for Update change button (also called confirm button)
+        //Event listeners designed to update the database
+        confirmButton1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = productTable.getSelectedRow();
+                if (selectedRow >= 0) {
+                    // Get row data
+                    String productCode = (String) productModel.getValueAt(selectedRow, 0);
+                    String brand = (String) productModel.getValueAt(selectedRow, 1);
+                    String productName = (String) productModel.getValueAt(selectedRow, 2);
+                    // Type conversion: Converts a string to Double and Integer
+                    Double price = null;
+                    Integer quantity = null;
+                    String gauge = (String) productModel.getValueAt(selectedRow, 6);
+                    try {
+                        price = Double.parseDouble(productModel.getValueAt(selectedRow, 3).toString());
+                        quantity = Integer.parseInt(productModel.getValueAt(selectedRow, 5).toString());
+                    } catch (NumberFormatException ex) {
+                        ex.printStackTrace();
+                        // Handle invalid number formats
+                        JOptionPane.showMessageDialog(frame, "Invalid number format in Price or Quantity.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    String productType = (String) productModel.getValueAt(selectedRow, 4);
+
+                    // updata data to database
+                    updateProductInDatabase(productCode, brand, productName, price, productType, quantity,gauge );
+                }
+            }
+        })
+        ;
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_st = new JLabel("Staff Area");
@@ -879,8 +1165,6 @@ public class Main {
         back_bt6.setBounds(1025, 10, 150, 75);
         back_bt6.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         staff_panel.add(back_bt6);
-
-
 
         //Action listener for back button
         ActionListener back_pressed6 = new ActionListener() {
@@ -897,7 +1181,6 @@ public class Main {
         cInfo_bt.setBounds(815, 10, 200, 75);
         cInfo_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         staff_panel.add(cInfo_bt);
-
 
         //Action listener for customer info button
         ActionListener cInfo_pressed = new ActionListener() {
@@ -930,8 +1213,6 @@ public class Main {
         oDetail_bt.setBounds(240, 10, 220, 75);
         oDetail_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         staff_panel.add(oDetail_bt);
-
-
 
         //Action listener for promote info button
         ActionListener oDetail_pressed = new ActionListener() {
@@ -968,7 +1249,6 @@ public class Main {
                 cardLayout.show(cardHolder, "StaffScreen");
             }
         };
-
 
         //adds Email: label
         JLabel email_lb_ci = new JLabel("Email:");
@@ -1045,9 +1325,6 @@ public class Main {
                 email_lb_ci2.setText(emailInputted);
             }
         };
-
-
-
 
 
         //Creates basket panel
@@ -1168,7 +1445,6 @@ public class Main {
 
 
 
-
         //Creates order detail panel
         JPanel orderDetail_panel = new JPanel(null);
 
@@ -1184,8 +1460,6 @@ public class Main {
         back_bt11.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         orderDetail_panel.add(back_bt11);
 
-
-
         //Action listener for back button
         ActionListener back_pressed11 = new ActionListener() {
             @Override
@@ -1196,21 +1470,20 @@ public class Main {
             }
         };
 
-// Add table
+        // Initialize the table model
         DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("userID");
         model.addColumn("email");
         model.addColumn("Order ID");
+        model.addColumn("Product Code");
         model.addColumn("Order Date");
-        // Initialize the table model
-
+        // Add table
         model = new DefaultTableModel();
-        model.addColumn("userID");
         model.addColumn("email");
         model.addColumn("Order Number");
+        model.addColumn("Product Code");
         model.addColumn("Order Date");
 
-// Initialize JTable with the model
+        // Initialize JTable with the model
         JTable table = new JTable(model);
         orderDetail_panel.add(new JScrollPane(table)); // Add table to panel inside a scroll pane
 
@@ -1221,19 +1494,20 @@ public class Main {
             );
 
             // JOIN query to retrieve user and their order details
-            String sql = "SELECT User.userID, User.email, Order1.orderNumber, Order1.orderDate " +
-                    "FROM User JOIN Order1 ON User.userID = Order1.userID";
+            String sql = "SELECT User.email, Order1.orderNumber, Order1.orderDate, OrderLine.productCode " +
+                    "FROM User JOIN Order1 ON User.userID = Order1.userID " +
+                    "JOIN OrderLine ON Order1.orderNumber = OrderLine.orderNumber";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
             // Process ResultSet and add data to the model
             while (rs.next()) {
-                int userID = rs.getInt("userID");
                 String email = rs.getString("email");
                 int orderNumber = rs.getInt("orderNumber");
+                String productCode = rs.getString("productCode");
                 Date orderDate = rs.getDate("orderDate");
 
-                model.addRow(new Object[]{userID, email, orderNumber, orderDate});
+                model.addRow(new Object[]{email, orderNumber, productCode,orderDate});
             }
 
             // Close resources
@@ -1246,13 +1520,10 @@ public class Main {
             // Handle exceptions appropriately
         }
 
-
-
-// ... Other columns ...
         JTable ordersTable = new JTable(model);
-        JScrollPane scrollPane = new JScrollPane(ordersTable);
-        scrollPane.setBounds(400, 100, 600, 500);
-        orderDetail_panel.add(scrollPane);
+        JScrollPane scrollPane1 = new JScrollPane(ordersTable);
+        scrollPane1.setBounds(400, 100, 600, 500);
+        orderDetail_panel.add(scrollPane1);
 
 // Add event listener to the table
         ordersTable.getSelectionModel().addListSelectionListener(e -> {
@@ -1295,21 +1566,29 @@ public class Main {
         cardHolder.add(staff_panel, "StaffScreen");
         cardHolder.add(customerInfo_panel, "CustomerInfoScreen");
         cardHolder.add(basket_panel, "BasketScreen");
+        // Add the basketPanel to the card layout container
+        cardHolder.add(basketPanel, "BasketPanel");
         cardHolder.add(confirm_panel, "ConfirmScreen");
         cardHolder.add(promote_panel, "PromoteScreen");
         cardHolder.add(orderDetail_panel, "OrderDetailScreen");
+        cardHolder.add(locomotivePanel, "LocomotivePanel");
+        cardHolder.add(rollingStockPanel, "RollingStockPanel");
+        cardHolder.add(controllerPanel, "ControllerPanel");
+        cardHolder.add(trackPanel, "TrackPanel");
+        cardHolder.add(trackPackPanel, "TrackPackPanel");
+        cardHolder.add(trainSetPanel, "TrainSetPanel");
 
 
         //Action listeners
-        login_bt.addActionListener(login_pressed);
-        signup_bt.addActionListener(signup_pressed);
+      /*  login_bt.addActionListener(login_pressed);
+        signup_bt.addActionListener(signup_pressed);*/
         logout_bt1.addActionListener(logout_pressed1);
         logout_bt2.addActionListener(logout_pressed2);
         account_bt.addActionListener(account_pressed);
         back_bt2.addActionListener(back_pressed2);
         back_bt3.addActionListener(back_pressed3);
         pHistory_bt.addActionListener(pHistory_pressed);
-        signUp_bt.addActionListener(signUp_pressed);
+        /*signUp_bt.addActionListener(signUp_pressed);*/
         back_bt4.addActionListener(back_pressed4);
         bDetails_bt.addActionListener(bDetails_pressed);
         back_bt5.addActionListener(back_pressed5);
@@ -1333,8 +1612,163 @@ public class Main {
 
         //required stuff
         frame.add(cardHolder);
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+//        cardLayout.show(cardHolder, "LoginScreen");
 
+    }
+
+    private static Order createOrderFromTableModel(DefaultTableModel basketTableModel) {
+        Vector<Vector> dataVector = basketTableModel.getDataVector();
+        Order order=new Order();
+        User user =UserSession.getCurrentUser();
+        order.setUser(user);
+        order.setOrderDate(new Date());
+        for (Vector<Object> rowData : dataVector) {
+            /*String productCode,
+            ProductType productType,
+            int quantity,
+            float productPrice*/
+//            order.addOrderLine(dataVector.get(3),  );
+            // Print or process the rowData as needed
+            String productCode= (String) rowData.get(0);
+            ProductType productType=ProductType.valueOf((String) rowData.get(3));
+            float productPrice=Float.valueOf((String) rowData.get(4));
+            int quantity=(Integer) rowData.get(5);
+            order.addOrderLine(productCode,productType,quantity,productPrice);
+            System.out.println("Row: " + rowData);
+        }
+        return order;
+    }
+
+
+    // the method to Update changes
+    private static void updateProductInDatabase(String productCode, String brand, String productName, Double price, String productType, Integer quantity,String gauge) {
+        // Here are the database connect and update statements
+        try {
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo"
+            );
+
+            String sql = "UPDATE Product SET brand = ?, productName = ?, price = ?, productType = ?, quantity = ?,gauge = ? WHERE productCode = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, brand);
+            ps.setString(2, productName);
+            ps.setDouble(3, price);
+            ps.setString(4, productType);
+            ps.setInt(5, quantity);
+            ps.setString(6, gauge);
+            ps.setString(7, productCode);
+
+            ps.executeUpdate();
+
+            ps.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        }
+    }
+
+    //the method to Reload data(product)
+    private static void refreshProductTable(DefaultTableModel productModel) {
+        // Clear existing data
+        productModel.setRowCount(0);
+
+        // Reload data
+        try {
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo");
+
+            String sql = "SELECT productCode, brand, productName, price, productType, quantity, gauge FROM Product";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String productCode = rs.getString("productCode");
+                String brand = rs.getString("brand");
+                String productName = rs.getString("productName");
+                double price = rs.getDouble("price");
+                String productType = rs.getString("productType");
+                int quantity = rs.getInt("quantity");
+                String gauge = rs.getString("gauge");
+                productModel.addRow(new Object[]{productCode, brand, productName, price, productType,quantity,gauge});
+            }
+
+            rs.close();
+            ps.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //the method to add new data(product)
+    private static void insertNewProductInDatabase(String productCode, String brand, String productName, Double price, String productType, Integer quantity, String gauge) {
+        // Here are the database connect and insert statements
+        try {
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo"
+            );
+
+            String sql = "INSERT INTO Product (productCode, brand, productName, price, productType, quantity, gauge) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, productCode);
+            ps.setString(2, brand);
+            ps.setString(3, productName);
+            ps.setDouble(4, price);
+            ps.setString(5, productType);
+            ps.setInt(6, quantity);
+            ps.setString(7, gauge);
+
+            ps.executeUpdate();
+
+            ps.close();
+            conn.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // This is where any SQL exceptions are handled
+        }
+    }
+
+    // Method to delete the selected product from the table and the database
+    private static void deleteSelectedProduct(JTable productTable, DefaultTableModel productModel) {
+        int selectedRow = productTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            // Assume that the product code is in the first column of the table
+            String productCode = (String) productModel.getValueAt(selectedRow, 0);
+            // Removes the selected row from the table model
+            productModel.removeRow(selectedRow);
+            // Delete records from the database
+            deleteProductFromDatabase(productCode);
+        } else {
+            JOptionPane.showMessageDialog(null, "Please select a product to delete.", "No Selection", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    //// Method to delete a product from the database based on its product code
+    private static void deleteProductFromDatabase(String productCode) {
+        try {
+            Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://stusql.dcs.shef.ac.uk:3306/team066?user=team066&password=aNohqu4mo");
+
+            String sql = "DELETE FROM Product WHERE productCode = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, productCode);
+            ps.executeUpdate();
+            ps.close();
+            conn.close();
+
+            JOptionPane.showMessageDialog(null, "Product deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error deleting product.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

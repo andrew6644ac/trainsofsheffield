@@ -44,4 +44,8 @@ public class TrackPack extends Product{
     public String getPackType() {
         return packType;
     }
+
+    public void addTrackInPack(TrackInPack trackInPack){
+        trackList.add(trackInPack);
+    }
 }

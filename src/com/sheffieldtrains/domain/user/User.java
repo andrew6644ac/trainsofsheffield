@@ -149,4 +149,8 @@ public class User {
     public boolean hasBankDetail(){
        return bankDetail==null;
     }
+
+    public Integer getUserId() {
+        return userID;
+    }
 }

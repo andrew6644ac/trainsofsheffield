@@ -104,7 +104,7 @@ public class ProductRepository extends Repository {
                 FROM
                     team066.TrackPack tp
                         JOIN    team066.Product p       ON tp.productCode=p.productCode
-                        JOIN    team066.Trackinpack tip ON tp.productCode=tip.tpProductCode
+                        JOIN    team066.TrackInPack tip ON tp.productCode=tip.tpProductCode
                         JOIN    team066.Track tk        ON tk.productCode=tip.tkProductCode
                 WHERE upper(p.productType)="TRACK_PACK"
                 ORDER BY p.productCode
@@ -350,23 +350,44 @@ public class ProductRepository extends Repository {
     }
 
     private static TrackPack buildTrackPack(ResultSet resultSet) throws SQLException {
+        String currentProductCode="noCode";
+        TrackInPack trackInPack=null;
+        TrackPack trackPack=null;
+        while (resultSet.next()) {
         String productCode=resultSet.getString("productCode");
-        TrackPack trackPack=new TrackPack();
-        populateProductInfo(trackPack, resultSet);
+     /*   TrackPack trackPack=new TrackPack();*/
+            if (productCode!=currentProductCode){
+                trackPack=new TrackPack();
+                populateProductInfo(trackPack, resultSet);
+                String packContents=resultSet.getString("tp.packContents");
+                String packType=resultSet.getString("tp.packType");
+                trackPack.setContents(packContents);
+                trackPack.setPackType(packType);
+                TRACK_PACK_MAP.put(trackPack.getProductCode(), trackPack);
+            }
+
+        /*populateProductInfo(trackPack, resultSet);
         String packContents=resultSet.getString("tp.packContents");
         String packType=resultSet.getString("tp.packType");
         trackPack.setContents(packContents);
         trackPack.setPackType(packType);
-        List<TrackInPack> containedTrackList=new ArrayList<>();
-        do {
+        List<TrackInPack> containedTrackList=new ArrayList<>();*/
+            String trackProductCode=resultSet.getString("trackProductCode");
+            int trackQuantity=resultSet.getInt("trackQuantity");
+            Track track=TRACK_MAP.get(trackProductCode);
+            trackInPack=new TrackInPack(track, trackQuantity);
+            trackPack.addTrackInPack(trackInPack);
+        }
+
+        /*do {
             String trackProductCode=resultSet.getString("trackProductCode");
             int trackQuantity=resultSet.getInt("trackQuantity");
             Track track=TRACK_MAP.get(trackProductCode);
             TrackInPack trackInPack=new TrackInPack(track, trackQuantity);
             containedTrackList.add(trackInPack);
         }
-        while (resultSet.next() && resultSet.getString("productCode").equals(productCode));
-        trackPack.setTrackList(containedTrackList);
+        while (resultSet.next() && resultSet.getString("productCode").equals(productCode));*/
+//        trackPack.setTrackList(containedTrackList);
         return trackPack;
     }
 

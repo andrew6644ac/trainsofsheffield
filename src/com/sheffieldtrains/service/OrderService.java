@@ -34,6 +34,7 @@ public class OrderService {
         return result;
     }
 
+
     public void modifyOrderLine(String userId, String productCode, int quantity) {
         Order order=userPendingOrders.get(userId);
         if (order==null) throw new UnknownOrderException();
@@ -67,6 +68,21 @@ public class OrderService {
         UserService.makeUserCustomer(user);
         //after confirmation, the user has no longer a pending order.
         userPendingOrders.remove(userId);
+        //todo: ??ORDERS_FOR_STAFF_TO_PROCESS.add(order);
+    }
+
+    public static void confirmOrderForUser(Integer userId, Order order) {
+     //   Order order=userPendingOrders.get(userId);
+        if (userId==null) throw new OrderNotFoundException("The userId has no pending order to confirm");
+        order.setStatus(OrderStatus.CONFIRMED);
+        order.assignOrderLineIds();
+        OrderRepository.saveOrder(order);
+        //todo: need to rethink about the
+        User user=new User();
+        user.setUserID(userId);
+        UserService.makeUserCustomer(user);
+        //after confirmation, the user has no longer a pending order.
+      //  userPendingOrders.remove(userId);
         //todo: ??ORDERS_FOR_STAFF_TO_PROCESS.add(order);
     }
 

@@ -54,7 +54,7 @@ public class Order {
     }
 
     public Integer getUserId() {
-        return userId;
+       return user!=null? user.getUserID(): userId;
     }
 
     public List<OrderLine> getOrderLines() {
@@ -121,6 +121,7 @@ public class Order {
     public void assignOrderLineIds() {
         for(OrderLine orderLine: orderLines){
             orderLine.setLineNumber(orderLineNumberCounter);
+            orderLineNumberCounter++;
         }
     }
 
