@@ -757,12 +757,33 @@ public class Main {
         JTextField cvv_tb = new JTextField(20);
         cvv_tb.setBounds(580, 200, 270, 30);
         bankDetails_panel.add(cvv_tb);
-
         //adds confirm button
         JButton confirm_bt_bd = new JButton("Confirm");
         confirm_bt_bd.setBounds(500, 680, 150, 75);
         confirm_bt_bd.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         bankDetails_panel.add(confirm_bt_bd);
+
+        // Add Bank Card Name label and text field
+        JLabel bankCardNameLabel = new JLabel("Bank Card Name:");
+        bankCardNameLabel.setBounds(440, 250, 250, 30); // Adjust the position and size as needed
+        bankCardNameLabel.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(bankCardNameLabel);
+
+        JTextField bankCardNameTextField = new JTextField(20);
+        bankCardNameTextField.setBounds(580, 250, 270, 30); // Adjust the position and size as needed
+        bankDetails_panel.add(bankCardNameTextField);
+
+// Add Card Holder Name label and text field
+        JLabel cardHolderNameLabel = new JLabel("Card Holder Name:");
+        cardHolderNameLabel.setBounds(425, 300, 250, 30); // Adjust the position and size as needed
+        cardHolderNameLabel.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(cardHolderNameLabel);
+
+        JTextField cardHolderNameTextField = new JTextField(20);
+        cardHolderNameTextField.setBounds(580, 300, 270, 30); // Adjust the position and size as needed
+        bankDetails_panel.add(cardHolderNameTextField);
+
+
 
         //Action listener for confirm button
         ActionListener confirm_pressed3 = new ActionListener() {
@@ -773,8 +794,12 @@ public class Main {
                 String cardNum_input = cardNumber_tb.getText();
                 String expire_input = expiration_tb.getText();
                 String cvv_input = cvv_tb.getText();
+                String bankCardNameInput = bankCardNameTextField.getText();
+                String cardHolderNameInput = cardHolderNameTextField.getText();
             }
         };
+
+
 
 
 
