@@ -5,6 +5,7 @@ import com.sheffieldtrains.domain.order.OrderLine;
 import com.sheffieldtrains.domain.order.OrderStatus;
 import com.sheffieldtrains.domain.product.*;
 import com.sheffieldtrains.domain.user.User;
+import com.sheffieldtrains.service.ProductService;
 import com.sheffieldtrains.service.UnknownUserException;
 import com.sheffieldtrains.service.UserService;
 
@@ -140,6 +141,26 @@ public class OrderRepository extends Repository {
         return orders;
     }
 
+    public static Order getOrder(Long orderId) {
+        ResultSet resultSet = null;
+        Order order=null;
+        String whereClause = " WHERE o.orderNumber=? ";
+        String sqlString = ALL_ORDER_SQL.replace(queryClausePlaceHolder, whereClause);
+        try (PreparedStatement stmt = getConnection().prepareStatement(sqlString)) {
+            stmt.setLong(1, orderId);
+            resultSet = stmt.executeQuery();
+            List<Order> orders= buildOrderList(resultSet);
+            if (orders.isEmpty()) {
+                throw new RuntimeException("Cannot find order with id: "+ orderId);
+            }
+            order=orders.get(0);
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database errors when trying to get all orders for userID:" + orderId);
+        }
+        return order;
+    }
+
+
     private static List<Order> buildOrderList(ResultSet resultSet) {
         List<Order> orders=new ArrayList<>();
         long currentOrderNumber=-1;
@@ -196,9 +217,19 @@ public class OrderRepository extends Repository {
         return orders;
     }
 
-    public static List<Order> getAllHistoricalOrders() {
-        //Todo
-        return null;
+    public static List<Order> getAllHistoricalOrders(Integer userId) {
+            ResultSet resultSet = null;
+            List<Order> orders=new ArrayList<>();
+            String whereClause = " WHERE o.userID=? ";
+            String sqlString = ALL_ORDER_SQL.replace(queryClausePlaceHolder, whereClause);
+            try (PreparedStatement stmt = getConnection().prepareStatement(sqlString)) {
+                stmt.setInt(1, userId);
+                resultSet = stmt.executeQuery();
+                orders= buildOrderList(resultSet);
+            } catch (SQLException ex) {
+                throw new RuntimeException("Database errors when trying to get all orders from userID:" + userId);
+            }
+            return orders;
     }
 
     public static List<Order> getHistoricalOrdersFromUser(Integer userId) {
@@ -208,7 +239,7 @@ public class OrderRepository extends Repository {
 
     public static List<Order> getAllOrdersToBeFulfilled()  {
         ResultSet resultSet =null;
-        String whereClause=" WHERE o.status = 'PENDING' ";
+        String whereClause=" WHERE o.status = 'CONFIRMED' ";
         List<Order> orders=new ArrayList<>();
         String sqlString = ALL_ORDER_SQL.replace(queryClausePlaceHolder, whereClause);
         try (PreparedStatement stmt = getConnection().prepareStatement(sqlString)) {
@@ -260,15 +291,51 @@ public class OrderRepository extends Repository {
 
     public static void fulfillOrder(Long orderId) {
         if (orderId==null){
-            throw new RuntimeException("Cannot find order to delete, orderId is null");
+            throw new RuntimeException("Cannot find order to fulfill, orderId is null");
         }
-        String fulfillSQL="UPDATE team066.Order SET status='FULFILLED' WHERE orderNumber=? ";
+        Order order =getOrder(orderId);
+        String productUpdateSql="UPDATE team066.Product SET quantity=? WHERE productCode=?";
+        String fulfillSQL="UPDATE team066.Order1 SET status='FULFILLED' WHERE orderNumber=? ";
+        if (order!=null) {
+            List<OrderLine> orderLines=order.getOrderLines();
+            try(Connection conn=getConnection();
+//
+                PreparedStatement productUpdateStmt=conn.prepareStatement(productUpdateSql);
+                PreparedStatement orderUpdateStmt=conn.prepareStatement(fulfillSQL);
+            ) {
+                conn.setAutoCommit(false);
+                for (OrderLine orderLine : orderLines) {
+                    int orderQuantity = orderLine.getQuantity();
+                    Product product = ProductService.getProduct(orderLine.getProductCode(), orderLine.getProductType());
+                    int productQuantity = product.getQuantity();
+                    if (orderQuantity > productQuantity) {
+                        throw new OrderFullfillmentException("Order cannot be fulfilled due to insufficient stock for: " + orderLine.getProductCode());
+                    }
+                    int newQuantity = productQuantity - orderQuantity;
+                    product.setQuantity(newQuantity);
+                    productUpdateStmt.setInt(1, newQuantity);
+                    productUpdateStmt.setString(2, product.getProductCode());
+                    productUpdateStmt.executeUpdate();
+                }
+                orderUpdateStmt.setLong(1, orderId);
+                orderUpdateStmt.executeUpdate();
+                conn.commit();
+            }
+            catch (SQLException e) {
+                    throw new RuntimeException("Database Error error when trying to fulfill the order: " + orderId);
+                }
+            }
+        }
+
+    public static void rejectOrder(Long orderNumber) {
+        String fulfillSQL="UPDATE team066.Order1 SET status='REJECTED' WHERE orderNumber=? ";
         try(Connection conn=getConnection();
             PreparedStatement stmt=conn.prepareStatement(fulfillSQL)){
-            stmt.setLong(1, orderId);
+            stmt.setLong(1, orderNumber);
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
 }

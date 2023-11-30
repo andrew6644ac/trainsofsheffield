@@ -140,6 +140,10 @@ public class Order {
     public void setOrderLines(List<OrderLine> orderLines) {
         this.orderLines=orderLines;
     }
+
+    public User getUser() {
+        return user;
+    }
 }
 
 

@@ -4,10 +4,14 @@ import com.sheffieldtrains.domain.user.Address;
 import com.sheffieldtrains.domain.user.BankDetail;
 import com.sheffieldtrains.domain.user.User;
 import com.sheffieldtrains.domain.user.UserRole;
+import com.sheffieldtrains.service.EmailInUseException;
 import com.sheffieldtrains.service.UnknownUserException;
+import com.sheffieldtrains.service.UserService;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class UserRepository extends Repository {
 
@@ -30,6 +34,13 @@ public class UserRepository extends Repository {
         JOIN `team066`.`Address` a ON u.houseNumber=a.houseNumber AND a.postcode=u.postcode
         LEFT JOIN `team066`.`UserInRole` ur   ON u.userID=ur.userID
         WHERE u.email=? or u.userID=?
+            """;
+
+    private static String GET_ALL_USER_SQL = """
+        SELECT u.userID, email , password, forename, surname, a.houseNumber, a.postcode, a.roadName, a.cityName, ur.roleName
+        FROM `team066`.`User` u
+        JOIN `team066`.`Address` a ON u.houseNumber=a.houseNumber AND a.postcode=u.postcode
+        LEFT JOIN `team066`.`UserInRole` ur   ON u.userID=ur.userID
             """;
 
     private static String REGISTER_NEW_USER_SQL = """
@@ -89,7 +100,6 @@ public class UserRepository extends Repository {
                                     String roadName,
                                     String cityName,
                                     String postcode) {
-
 
         User user=new User(email, password, forename, surname);
         PreparedStatement addressStmt=null;
@@ -225,8 +235,27 @@ public class UserRepository extends Repository {
             stmt.setString(1, email);
             stmt.setNull(2, Types.INTEGER);
             resultSet = stmt.executeQuery();
-            if (resultSet.next()) {
-                Integer userID = resultSet.getInt("userID");
+            List<User> users= buildUsers(resultSet);
+            if(!users.isEmpty()){
+                user=users.get(0);
+            }
+           /* while (resultSet.next()) {
+                user= buildUsers(resultSet).get(0);
+            }*/
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error when trying to retrieve user information");
+        }
+        return user;
+    }
+
+    private static List<User> buildUsers(ResultSet resultSet) throws SQLException{
+        List<User> users=new ArrayList<>();
+        long currentUserId=-1;
+        User user =null;
+        while (resultSet.next()) {
+            int userId=resultSet.getInt("userID");
+            if (userId!=currentUserId) {
+                String email = resultSet.getString("email");
                 String password = resultSet.getString("password");
                 String forename = resultSet.getString("forename");
                 String surname = resultSet.getString("surname");
@@ -234,32 +263,34 @@ public class UserRepository extends Repository {
                 String roadName = resultSet.getString("roadName");
                 String cityName = resultSet.getString("cityName");
                 String postcode = resultSet.getString("postcode");
-                String roleName=resultSet.getString("roleName");
-
-                if (user==null) {
-                    user = new User(email, password, forename, surname);
-                    user.setUserID(userID);
-                    Address address = new Address(houseNumber, roadName, cityName, postcode);
-                    user.setAddress(address);
-                    }
-                if (roleName!=null){
-                    user.addRole(UserRole.valueOf(roleName));
-                }
+                user = new User(email, password, forename, surname);
+                user.setUserID(userId);
+                Address address = new Address(houseNumber, roadName, cityName, postcode);
+                user.setAddress(address);
                 BankDetail bankDetail=getBankDetail(user.getUserID());
                 user.setBankDetail(bankDetail);
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException("Database error when trying to retrieve user information");
-        } finally {
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException ex) {
-                    throw new RuntimeException("Database error when trying to close resultSet");
-                }
+                users.add(user);
+                currentUserId=userId;
+            } //next build roles
+            String roleName=resultSet.getString("roleName");
+            if (roleName!=null) {
+                user.addRole(UserRole.valueOf(roleName));
             }
         }
-        return user;
+        return users;
+    }
+
+
+    public static List<User> getAllUser() {
+        ResultSet resultSet = null;
+        List<User> users=new ArrayList<>();
+        try (PreparedStatement stmt = getConnection().prepareStatement(GET_ALL_USER_SQL)) {
+            resultSet = stmt.executeQuery();
+            users= buildUsers(resultSet);
+        } catch (SQLException ex) {
+            throw new RuntimeException("Database error when trying to retrieve user information");
+        }
+        return users;
     }
 
     public static void addUserRole(Integer userId, UserRole roleName) {
@@ -281,6 +312,9 @@ public class UserRepository extends Repository {
             if(!isUserInExistence(null, user.getUserID())) {
                 throw new UnknownUserException("Can not find the user");
             };
+            if (newEmailBelongToOtherUserAlready(user)){
+                throw new EmailInUseException();
+            }
             //need to save both Address and User in one transaction.
             connection=getConnection();
             connection.setAutoCommit(false);
@@ -335,6 +369,14 @@ public class UserRepository extends Repository {
         return user;
     }
 
+    private static boolean newEmailBelongToOtherUserAlready(User user) {
+        boolean result=false;
+        User retrievedUser=UserService.getUser(user.getEmail());
+        if (retrievedUser!=null){
+            result= (retrievedUser.getUserId() !=user.getUserId());
+        }
+        return result;
+    }
 
     public static void addOrModifyBankDetails(Integer userID,
                                               String bankCardName,

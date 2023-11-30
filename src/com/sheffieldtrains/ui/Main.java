@@ -1,10 +1,7 @@
 package com.sheffieldtrains.ui;
 
-//import statements
-
 import com.sheffieldtrains.domain.order.Order;
-import com.sheffieldtrains.domain.order.OrderLine;
-import com.sheffieldtrains.domain.product.Product;
+
 import com.sheffieldtrains.domain.product.ProductType;
 import com.sheffieldtrains.domain.user.User;
 import com.sheffieldtrains.service.OrderService;
@@ -153,7 +150,17 @@ public class Main {
     // ... existing class-level variables ...
      static DefaultTableModel basketTableModel = new DefaultTableModel(new String[]{"Product Code", "Brand", "Product Name", "Product Type", "Price","Quantity", "Increase", "Reduce", "Remove Item"}, 0);
      static JTable basketTable = new JTable(basketTableModel);
+    private static OrderHistoryController orderHistoryController;
 
+    private static EditDetailPanel editDetails_panel;
+
+    public static OrderHistoryController getOrderHistoryController(){
+        return orderHistoryController;
+    }
+
+    public static EditDetailPanel getEditDetails_panel(){
+        return editDetails_panel;
+    }
 
     // 计算购物车总价的方法
     public static double calculateTotalPrice(DefaultTableModel model) {
@@ -354,7 +361,7 @@ public class Main {
         };
 
         //adds account button
-        JButton account_bt = new JButton("Account");
+        JButton account_bt = new JButton("Admin");
         account_bt.setBounds(25, 10, 150, 75);
         account_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         menu_panel.add(account_bt);
@@ -405,20 +412,24 @@ public class Main {
 // 例如：Main.basketTable.getColumnModel().getColumn(0).setPreferredWidth(100);
 
 // 创建包含篮子表格的滚动窗格
-        JScrollPane basketScrollPane = new JScrollPane(Main.basketTable);
+//        JScrollPane basketScrollPane = new JScrollPane(Main.basketTable);
 
 // 创建将包含篮子表格的面板
-        JPanel basketPanel = new JPanel(new BorderLayout());
+       /* JPanel basketPanel = new JPanel(new BorderLayout());
+
         basketPanel.add(basketScrollPane, BorderLayout.CENTER);
 
 // 添加'返回'按钮到面板
         basketPanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);
-
+*/
 // 将篮子面板添加到卡片布局容器
-        cardHolder.add(basketPanel, "BasketPanel");
+//        cardHolder.add(basketPanel, "BasketPanel");
 
 
 
+        BasketPanel basketPanel=new BasketPanel("BasketPanel", cardHolder,  frame);
+
+        basketPanel.setTable(basketTable, basketTableModel);
 
         //adds view basket button
         JButton viewBasket_bt = new JButton("View Basket");
@@ -430,43 +441,46 @@ public class Main {
         totalPriceLabel.setFont(new Font("Times New Roman", Font.BOLD, 18));
         totalPriceLabel.setBounds(300, 680, 250, 75);
 // 添加确认订单的按钮
-        JButton confirmOrderButton = new JButton("Confirm Order");
+       /* JButton confirmOrderButton = new JButton("Confirm Order");
         confirmOrderButton.setFont(new Font("Times New Roman", Font.BOLD, 25));
         confirmOrderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 计算购物车总价
-            /*    double totalPrice = calculateTotalPrice(basketTableModel);
+            *//*    double totalPrice = calculateTotalPrice(basketTableModel);
 
                 // 输出总价以供调试
                 System.out.println("计算的总价: $" + String.format("%.2f", totalPrice));
 
                 // 更新总价标签的文本
-                totalPriceLabel.setText("Total Price: $" + String.format("%.2f", totalPrice));*/
-                Order order=createOrderFromTableModel(basketTableModel);
-                if (!order.isEmpty()) {
-                    OrderService.confirmOrderForUser(UserSession.getCurrentUser().getUserId(), order);
-                }
+                totalPriceLabel.setText("Total Price: $" + String.format("%.2f", totalPrice));*//*
+               *//* if (UserSession.getCurrentUser().hasBankDetail()) {*//*
+                   Order order = createOrderFromTableModel(basketTableModel);
+                   if (!order.isEmpty()) {
+                       OrderService.confirmOrderForUser(UserSession.getCurrentUser().getUserId(), order);
+                   }
                 basketTableModel.setRowCount(0);
                 cardLayout.show(cardHolder, "MenuScreen");
                 }
-        });
+
+        });*/
 
 
 
-// 创建一个面板来容纳总价标签和按钮
+
+/*// 创建一个面板来容纳总价标签和按钮
         JPanel bottomPanel = new JPanel(new BorderLayout());
 
 // 添加总价标签到底部面板的北部
-        bottomPanel.add(totalPriceLabel, BorderLayout.CENTER);
+        bottomPanel.add(totalPriceLabel, BorderLayout.CENTER);*/
 
 // 创建一个新的面板来容纳"Back"和"Confirm Order"按钮
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+//        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 // 设置按钮的首选大小
-        confirmOrderButton.setPreferredSize(new Dimension(250, 75));
+//        confirmOrderButton.setPreferredSize(new Dimension(250, 75));
         viewBasket_bt.setPreferredSize(new Dimension(250, 75));
 
-// 将"Back"按钮和"Confirm Order"按钮添加到按钮面板
+/*// 将"Back"按钮和"Confirm Order"按钮添加到按钮面板
         buttonPanel.add(createBackButton("MenuScreen"));
         buttonPanel.add(confirmOrderButton);
 
@@ -478,7 +492,8 @@ public class Main {
 
 // 刷新界面以显示添加的组件
         basketPanel.revalidate();
-        basketPanel.repaint();
+        basketPanel.repaint();*/
+
 
 
 
@@ -579,10 +594,11 @@ public class Main {
                 cardLayout.show(cardHolder, "LoginScreen");
             }
         };
-        
+
 
         //Creates account panel
-        JPanel account_panel = new JPanel(null);
+        AccountPanel account_panel = new AccountPanel("AccountScreen", cardHolder,  frame);
+        /*JPanel account_panel = new JPanel(null);
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_ac = new JLabel("Account");
@@ -619,6 +635,7 @@ public class Main {
                 //changes screen to Account Screen
                 CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
                 cardLayout.show(cardHolder, "PHistoryScreen");
+                orderHistoryController.notifyChange();
             }
         };
 
@@ -656,7 +673,7 @@ public class Main {
 
         //adds staff button
         JButton staff_bt = new JButton("Staff");
-        staff_bt.setBounds(1025, 85, 150, 75);
+        staff_bt.setBounds(1025, 95, 150, 75);
         staff_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         account_panel.add(staff_bt);
 
@@ -670,7 +687,7 @@ public class Main {
                 cardLayout.show(cardHolder, "StaffScreen");
             }
         };
-
+*/
 
 
 
@@ -691,6 +708,15 @@ public class Main {
 
         //Action listener for back button
         ActionListener back_pressed4 = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "AccountScreen");
+            }
+        };
+
+        ActionListener backToAccountListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //changes screen to Account Screen
@@ -752,14 +778,12 @@ public class Main {
 
 
 
-
-
-
+        editDetails_panel=new EditDetailPanel("EditDetailsScreen", cardHolder, frame);
         //Creates Edit Details panel
-        JPanel editDetails_panel = new JPanel(null);
+      /*  JPanel editDetails_panel = new JPanel(null);
 
         //adds a title in the centre at the top in bold font size 40
-        JLabel title_ed = new JLabel("Edit Details");
+        JLabel title_ed = new JLabel("Edit User Details");
         title_ed.setBounds(500, 25, 600, 45);
         title_ed.setFont(new Font("Times New Roman", Font.BOLD, 40));
         editDetails_panel.add(title_ed);
@@ -952,7 +976,7 @@ public class Main {
                     cardLayout.show(cardHolder, "AccountScreen");
                 }
             }
-        };
+        };*/
 
 
 
@@ -960,7 +984,9 @@ public class Main {
 
 
         //Creates purchase history panel
-        JPanel pHistory_panel = new JPanel(null);
+        OrderHisotryPanel pHistory_panel = new OrderHisotryPanel("PHistoryScreen", cardHolder, frame);
+        orderHistoryController=new OrderHistoryController(pHistory_panel);
+       /* JPanel pHistory_panel = new JPanel(null);
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_ph = new JLabel("Purchase History");
@@ -983,9 +1009,7 @@ public class Main {
                 cardLayout.show(cardHolder, "AccountScreen");
             }
         };
-
-
-
+*/
 
 
         //Creates staff area panel
@@ -1417,9 +1441,9 @@ public class Main {
 
 
         //Creates promote panel
-        JPanel promote_panel = new JPanel(null);
+        PromotePanel promote_panel = new PromotePanel("PromoteScreen", cardHolder, frame);
 
-        //adds a title in the centre at the top in bold font size 40
+      /*  //adds a title in the centre at the top in bold font size 40
         JLabel title_pr = new JLabel("Promote/Demote");
         title_pr.setBounds(480, 25, 600, 45);
         title_pr.setFont(new Font("Times New Roman", Font.BOLD, 40));
@@ -1441,15 +1465,14 @@ public class Main {
             }
         };
 
-
-
+*/
 
 
         //Creates order detail panel
-        JPanel orderDetail_panel = new JPanel(null);
-
+//        JPanel orderDetail_panel = new JPanel(null);
+        OrderDetailPanel orderDetail_panel =new OrderDetailPanel("OrderDetailScreen", cardHolder, frame);
         //adds a title in the centre at the top in bold font size 40
-        JLabel title_od = new JLabel("Order Details");
+      /*  JLabel title_od = new JLabel("Order Details");
         title_od.setBounds(480, 25, 600, 45);
         title_od.setFont(new Font("Times New Roman", Font.BOLD, 40));
         orderDetail_panel.add(title_od);
@@ -1472,12 +1495,12 @@ public class Main {
 
         // Initialize the table model
         DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("email");
+       *//* model.addColumn("email");
         model.addColumn("Order ID");
         model.addColumn("Product Code");
         model.addColumn("Order Date");
         // Add table
-        model = new DefaultTableModel();
+        model = new DefaultTableModel(); *//*
         model.addColumn("email");
         model.addColumn("Order Number");
         model.addColumn("Product Code");
@@ -1550,7 +1573,7 @@ public class Main {
 // ... Configure the back button, etc. ...
 
 // Add orderDetail_panel to cardHolder
-        cardHolder.add(orderDetail_panel, "OrderDetailScreen");
+        cardHolder.add(orderDetail_panel, "OrderDetailScreen");*/
 
 
 
@@ -1567,7 +1590,7 @@ public class Main {
         cardHolder.add(customerInfo_panel, "CustomerInfoScreen");
         cardHolder.add(basket_panel, "BasketScreen");
         // Add the basketPanel to the card layout container
-        cardHolder.add(basketPanel, "BasketPanel");
+//        cardHolder.add(basketPanel, "BasketPanel");
         cardHolder.add(confirm_panel, "ConfirmScreen");
         cardHolder.add(promote_panel, "PromoteScreen");
         cardHolder.add(orderDetail_panel, "OrderDetailScreen");
@@ -1585,29 +1608,29 @@ public class Main {
         logout_bt1.addActionListener(logout_pressed1);
         logout_bt2.addActionListener(logout_pressed2);
         account_bt.addActionListener(account_pressed);
-        back_bt2.addActionListener(back_pressed2);
-        back_bt3.addActionListener(back_pressed3);
-        pHistory_bt.addActionListener(pHistory_pressed);
+       // back_bt2.addActionListener(back_pressed2);
+       /* back_bt3.addActionListener(back_pressed3);*/
+      //  pHistory_bt.addActionListener(pHistory_pressed);
         /*signUp_bt.addActionListener(signUp_pressed);*/
         back_bt4.addActionListener(back_pressed4);
-        bDetails_bt.addActionListener(bDetails_pressed);
-        back_bt5.addActionListener(back_pressed5);
-        eDetails_bt.addActionListener(eDetails_pressed);
-        confirm_bt_ed.addActionListener(confirm_pressed);
+      //  bDetails_bt.addActionListener(bDetails_pressed);
+     /*   back_bt5.addActionListener(back_pressed5);*/
+      //  eDetails_bt.addActionListener(eDetails_pressed);
+//        confirm_bt_ed.addActionListener(confirm_pressed);
         back_bt6.addActionListener(back_pressed6);
-        staff_bt.addActionListener((staff_pressed));
+     //   staff_bt.addActionListener((staff_pressed));
         cInfo_bt.addActionListener((cInfo_pressed));
         back_bt7.addActionListener(back_pressed7);
-        addInfo_bt.addActionListener(addInfo_pressed);
+//        addInfo_bt.addActionListener(addInfo_pressed);
         search_bt.addActionListener(search_pressed);
         back_bt8.addActionListener(back_pressed8);
         viewBasket_bt.addActionListener(viewBasket_pressed);
         back_bt9.addActionListener(back_pressed9);
-        confirm_bt_bs.addActionListener(confirm_pressed2);
+//        confirm_bt_bs.addActionListener(confirm_pressed2);
         promote_bt.addActionListener(promote_pressed);
-        back_bt10.addActionListener(back_pressed10);
+//        back_bt10.addActionListener(back_pressed10);
         oDetail_bt.addActionListener(oDetail_pressed);
-        back_bt11.addActionListener(back_pressed11);
+        /*back_bt11.addActionListener(back_pressed11);*/
         confirm_bt_bd.addActionListener(confirm_pressed3);
 
         //required stuff
@@ -1615,6 +1638,7 @@ public class Main {
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+//        cardLayout.show(cardHolder, "LocomotivePanel");
 //        cardLayout.show(cardHolder, "LoginScreen");
 
     }

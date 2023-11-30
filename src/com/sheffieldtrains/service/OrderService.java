@@ -124,11 +124,16 @@ public class OrderService {
         return orderList;
     }
 
-    public void fulfillOrder(Long orderId){
+    public static void fulfillOrder(Long orderId){
         OrderRepository.fulfillOrder(orderId);
     }
 
-    private float getProductPrice(String productCode, ProductType productType) {
+
+    public static void rejectOrder(Long orderNumber) {
+        OrderRepository.rejectOrder(orderNumber);
+    }
+
+    private static float getProductPrice(String productCode, ProductType productType) {
         //Todo: need to go to grab the price from ProductService;
         return ProductService.getProductPrice(productCode, productType);
     }

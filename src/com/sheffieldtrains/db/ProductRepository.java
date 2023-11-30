@@ -117,7 +117,7 @@ public class ProductRepository extends Repository {
                     tp.quantity
                 FROM
                     team066.TrainSet ts
-                JOIN    team066.Trackpackintrainset tp ON ts.productCode=tp.tsProductCode
+                JOIN    team066.TrackPackInTrainSet tp ON ts.productCode=tp.tsProductCode
                 ORDER BY ts.productCode
             """;
 
@@ -147,7 +147,7 @@ public class ProductRepository extends Repository {
                     rsts.rsProductCode AS rollingStockProductCode,
                     rsts.quantity    AS rollingStockQuantitiy
                 FROM
-                        team066.Trainset ts
+                        team066.TrainSet ts
                 JOIN    team066.Product p       ON ts.productCode=p.productCode
                 JOIN    team066.Controller c    ON c.productCode=ts.controllerProductCode
                 JOIN    team066.RollingStockInTrainSet rsts ON ts.productCode=rsts.tsProductCode

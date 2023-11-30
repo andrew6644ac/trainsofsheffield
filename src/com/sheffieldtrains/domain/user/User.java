@@ -42,6 +42,14 @@ public class User {
         this.surname = surname;
     }
 
+    public User(Integer userID, String email, String password, String forename, String surname) {
+        this.userID = userID;
+        this.email = email;
+        this.password = password;
+        this.forename = forename;
+        this.surname = surname;
+    }
+
     public Integer getUserID() {
         return userID;
     }
@@ -152,5 +160,9 @@ public class User {
 
     public Integer getUserId() {
         return userID;
+    }
+
+    public boolean isManager() {
+        return hasRole(UserRole.MANAGER);
     }
 }
