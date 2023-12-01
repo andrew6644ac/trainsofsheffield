@@ -4,8 +4,10 @@ import com.sheffieldtrains.db.UserRepository;
 import com.sheffieldtrains.domain.user.BankDetail;
 import com.sheffieldtrains.domain.user.User;
 import com.sheffieldtrains.domain.user.UserRole;
+import com.sheffieldtrains.ui.UserSession;
 
 import java.util.Date;
+import java.util.List;
 
 public class UserService {
     //Register a new user with all parameters.
@@ -43,6 +45,8 @@ public class UserService {
     /*Edit existing user info.*/
     public static void modifyUserDetails(User user){
         UserRepository.modifyUserDetails(user);
+        //make sure the current user info is up to date;
+        UserSession.setCurrentUser(user);
     }
 
    /* public static void modifyUserAddress(User user) {
@@ -90,6 +94,10 @@ public class UserService {
             throw new UnknownUserException("User Id has to be supplied.");
         }
        return UserRepository.getBankDetail(userId);
+    }
+
+    public static List<User> getAllUsers() {
+        return UserRepository.getAllUser();
     }
 
     public void deleteUser(Integer userID){

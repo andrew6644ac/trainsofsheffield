@@ -166,6 +166,8 @@ public class SignUpPanel extends TopUIPanel {
                             //todo: if the email id is already used, need to tell that such an user exists already. A pop up screen maybe?? .
                             JLabel existingUserErrorLabel = new JLabel("The email is already in use. Please use a different one");
                             add(existingUserErrorLabel);
+                        /*    revalidate();
+                            repaint();*/
                             topFrame.repaint();
                         }
                         CardLayout cardLayout = (CardLayout) parentParentPanel.getLayout();

@@ -1,10 +1,7 @@
 package com.sheffieldtrains.ui;
 
-//import statements
-
 import com.sheffieldtrains.domain.order.Order;
-import com.sheffieldtrains.domain.order.OrderLine;
-import com.sheffieldtrains.domain.product.Product;
+
 import com.sheffieldtrains.domain.product.ProductType;
 import com.sheffieldtrains.domain.user.User;
 import com.sheffieldtrains.service.OrderService;
@@ -153,7 +150,20 @@ public class Main {
     // ... existing class-level variables ...
      static DefaultTableModel basketTableModel = new DefaultTableModel(new String[]{"Product Code", "Brand", "Product Name", "Product Type", "Price","Quantity", "Increase", "Reduce", "Remove Item"}, 0);
      static JTable basketTable = new JTable(basketTableModel);
+    private static OrderHistoryController orderHistoryController;
 
+    private static EditDetailPanel editDetails_panel;
+
+    private static AccountPanel account_panel;
+
+    private static PromotePanel promote_panel;
+    public static OrderHistoryController getOrderHistoryController(){
+        return orderHistoryController;
+    }
+
+    public static EditDetailPanel getEditDetails_panel(){
+        return editDetails_panel;
+    }
 
     // 计算购物车总价的方法
     public static double calculateTotalPrice(DefaultTableModel model) {
@@ -189,9 +199,14 @@ public class Main {
         return backButton;
     }
 
+    public static void main(String[] args){
+        SwingUtilities.invokeLater(() -> {
+            main2(args);
+        });
+    }
 
 
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
         LoggedIn loggedIn = new LoggedIn();
         //Creates window with name in title bar and sets size of window
         JFrame frame = new JFrame("Trains Of Sheffield");
@@ -354,7 +369,7 @@ public class Main {
         };
 
         //adds account button
-        JButton account_bt = new JButton("Account");
+        JButton account_bt = new JButton("Admin");
         account_bt.setBounds(25, 10, 150, 75);
         account_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         menu_panel.add(account_bt);
@@ -364,6 +379,7 @@ public class Main {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //changes screen to Account Screen
+                account_panel.takeSecurityMeaures();
                 CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
                 cardLayout.show(cardHolder, "AccountScreen");
             }
@@ -413,12 +429,14 @@ public class Main {
 
 // 添加'返回'按钮到面板
         basketPanel.add(createBackButton("MenuScreen"), BorderLayout.SOUTH);
-
 // 将篮子面板添加到卡片布局容器
         cardHolder.add(basketPanel, "BasketPanel");
 
 
+    //newly added, not working
+     /*   BasketPanel basketPanel=new BasketPanel("BasketPanel", cardHolder,  frame);
 
+        basketPanel.setTable(basketTable, basketTableModel);*/
 
         //adds view basket button
         JButton viewBasket_bt = new JButton("View Basket");
@@ -436,21 +454,27 @@ public class Main {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 计算购物车总价
-            /*    double totalPrice = calculateTotalPrice(basketTableModel);
+                double totalPrice = calculateTotalPrice(basketTableModel);
 
                 // 输出总价以供调试
                 System.out.println("计算的总价: $" + String.format("%.2f", totalPrice));
 
                 // 更新总价标签的文本
-                totalPriceLabel.setText("Total Price: $" + String.format("%.2f", totalPrice));*/
-                Order order=createOrderFromTableModel(basketTableModel);
-                if (!order.isEmpty()) {
-                    OrderService.confirmOrderForUser(UserSession.getCurrentUser().getUserId(), order);
+                totalPriceLabel.setText("Total Price: $" + String.format("%.2f", totalPrice));
+                if (UserSession.getCurrentUser().hasBankDetail()) {
+                    Order order = Util.createOrderFromTableModel(basketTableModel);
+                    if (!order.isEmpty()) {
+                        OrderService.confirmOrderForUser(UserSession.getCurrentUser().getUserId(), order);
+                    }
+                    basketTableModel.setRowCount(0);
+                    cardLayout.show(cardHolder, "MenuScreen");
                 }
-                basketTableModel.setRowCount(0);
-                cardLayout.show(cardHolder, "MenuScreen");
+                else {//no bank details, should go to add bank details screen.
+                    cardLayout.show(cardHolder, "BankDetailsScreen");
                 }
+            }
         });
+
 
 
 
@@ -482,7 +506,6 @@ public class Main {
 
 
 
-
         //Action listener for account button
         ActionListener viewBasket_pressed = new ActionListener() {
             @Override
@@ -490,9 +513,9 @@ public class Main {
                 //changes screen to basket Screen
                 // Switch to the basket panel to show the table
                 cardLayout.show(cardHolder, "BasketPanel");
+// added by me.               cardLayout.show(cardHolder, "BasketScreen");
             }
         };
-
 
 
         //adds temp label
@@ -579,10 +602,11 @@ public class Main {
                 cardLayout.show(cardHolder, "LoginScreen");
             }
         };
-        
+
 
         //Creates account panel
-        JPanel account_panel = new JPanel(null);
+         account_panel = new AccountPanel("AccountScreen", cardHolder,  frame);
+        /*JPanel account_panel = new JPanel(null);
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_ac = new JLabel("Account");
@@ -619,6 +643,7 @@ public class Main {
                 //changes screen to Account Screen
                 CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
                 cardLayout.show(cardHolder, "PHistoryScreen");
+                orderHistoryController.notifyChange();
             }
         };
 
@@ -656,7 +681,7 @@ public class Main {
 
         //adds staff button
         JButton staff_bt = new JButton("Staff");
-        staff_bt.setBounds(1025, 85, 150, 75);
+        staff_bt.setBounds(1025, 95, 150, 75);
         staff_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         account_panel.add(staff_bt);
 
@@ -670,21 +695,21 @@ public class Main {
                 cardLayout.show(cardHolder, "StaffScreen");
             }
         };
-
+*/
 
 
 
         //Creates bank details panel
-        JPanel bankDetails_panel = new JPanel(null);
+        BankDetailPanel bankDetails_panel = new BankDetailPanel("BankDetailsScreen", cardHolder,  frame);
 
-        //adds a title in the centre at the top in bold font size 40
+       /* //adds a title in the centre at the top in bold font size 40
         JLabel title_bd = new JLabel("Bank Details");
         title_bd.setBounds(500, 25, 600, 45);
         title_bd.setFont(new Font("Times New Roman", Font.BOLD, 40));
-        bankDetails_panel.add(title_bd);
+        bankDetails_panel.add(title_bd); */
 
         //adds back button
-        JButton back_bt4 = new JButton("Back");
+       /* JButton back_bt4 = new JButton("Back");
         back_bt4.setBounds(1025, 10, 150, 75);
         back_bt4.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         bankDetails_panel.add(back_bt4);
@@ -699,41 +724,72 @@ public class Main {
             }
         };
 
+        ActionListener backToAccountListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //changes screen to Account Screen
+                CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                cardLayout.show(cardHolder, "AccountScreen");
+            }
+        };*/
+
+        //adds card type label
+        /*JLabel cardType_lb = new JLabel("Card Type:");
+        cardType_lb.setBounds(*//*466*//*520, 100, 250, 30);
+        cardType_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(cardType_lb);
+
+        //adds card type text box
+        JTextField cardType_tb = new JTextField(20);
+        cardType_tb.setBounds(580, 100, 270, 30);
+        bankDetails_panel.add(cardType_tb);
+
+        //adds card holder label
+        JLabel cardHolder_lb = new JLabel("Card Holder  Name:");
+        cardHolder_lb.setBounds(*//*466*//*520, 150, 250, 30);
+        cardHolder_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
+        bankDetails_panel.add(cardHolder_lb);
+
+        //adds card holder text box
+        JTextField cardHolder__tb = new JTextField(20);
+        cardHolder__tb.setBounds(580, 150, 270, 30);
+        bankDetails_panel.add(cardHolder__tb);
+
         //adds card number label
         JLabel cardNumber_lb = new JLabel("Card Number:");
-        cardNumber_lb.setBounds(466, 100, 250, 30);
+        cardNumber_lb.setBounds(*//*466*//*520, 200, 250, 30);
         cardNumber_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         bankDetails_panel.add(cardNumber_lb);
 
         //adds card number text box
         JTextField cardNumber_tb = new JTextField(20);
-        cardNumber_tb.setBounds(580, 100, 270, 30);
+        cardNumber_tb.setBounds(580, 200, 270, 30);
         bankDetails_panel.add(cardNumber_tb);
 
         //adds expiration date label
         JLabel expiration_lb = new JLabel("Expiration Date:");
-        expiration_lb.setBounds(448, 150, 250, 30);
+        expiration_lb.setBounds(*//*466*//*520, 250, 250, 30);
         expiration_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         bankDetails_panel.add(expiration_lb);
 
         //adds expiration date text box
         JTextField expiration_tb = new JTextField(20);
-        expiration_tb.setBounds(580, 150, 270, 30);
+        expiration_tb.setBounds(580, 250, 270, 30);
         bankDetails_panel.add(expiration_tb);
 
         //adds cvv label
         JLabel cvv_lb = new JLabel("CVV Code:");
-        cvv_lb.setBounds(490, 200, 250, 30);
+        cvv_lb.setBounds(*//*466*//*520, 300, 250, 30);
         cvv_lb.setFont(new Font("Times New Roman", Font.PLAIN, 20));
         bankDetails_panel.add(cvv_lb);
 
         //adds cvv text box
         JTextField cvv_tb = new JTextField(20);
-        cvv_tb.setBounds(580, 200, 270, 30);
-        bankDetails_panel.add(cvv_tb);
+        cvv_tb.setBounds(580, 300, 270, 30);
+        bankDetails_panel.add(cvv_tb); */
 
         //adds confirm button
-        JButton confirm_bt_bd = new JButton("Confirm");
+     /*   JButton confirm_bt_bd = new JButton("Confirm");
         confirm_bt_bd.setBounds(500, 680, 150, 75);
         confirm_bt_bd.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         bankDetails_panel.add(confirm_bt_bd);
@@ -744,22 +800,20 @@ public class Main {
             public void actionPerformed(ActionEvent e) {
                 //todo check info is valid including date, num and length
                 //todo put info into db
-                String cardNum_input = cardNumber_tb.getText();
+               *//* String cardNum_input = cardNumber_tb.getText();
                 String expire_input = expiration_tb.getText();
-                String cvv_input = cvv_tb.getText();
+                String cvv_input = cvv_tb.getText();*//*
             }
         };
+*/
 
 
-
-
-
-
+        editDetails_panel=new EditDetailPanel("EditDetailsScreen", cardHolder, frame);
         //Creates Edit Details panel
-        JPanel editDetails_panel = new JPanel(null);
+      /*  JPanel editDetails_panel = new JPanel(null);
 
         //adds a title in the centre at the top in bold font size 40
-        JLabel title_ed = new JLabel("Edit Details");
+        JLabel title_ed = new JLabel("Edit User Details");
         title_ed.setBounds(500, 25, 600, 45);
         title_ed.setFont(new Font("Times New Roman", Font.BOLD, 40));
         editDetails_panel.add(title_ed);
@@ -952,7 +1006,7 @@ public class Main {
                     cardLayout.show(cardHolder, "AccountScreen");
                 }
             }
-        };
+        };*/
 
 
 
@@ -960,7 +1014,9 @@ public class Main {
 
 
         //Creates purchase history panel
-        JPanel pHistory_panel = new JPanel(null);
+        OrderHisotryPanel pHistory_panel = new OrderHisotryPanel("PHistoryScreen", cardHolder, frame);
+        orderHistoryController=new OrderHistoryController(pHistory_panel);
+       /* JPanel pHistory_panel = new JPanel(null);
 
         //adds a title in the centre at the top in bold font size 40
         JLabel title_ph = new JLabel("Purchase History");
@@ -983,9 +1039,7 @@ public class Main {
                 cardLayout.show(cardHolder, "AccountScreen");
             }
         };
-
-
-
+*/
 
 
         //Creates staff area panel
@@ -1172,6 +1226,7 @@ public class Main {
             public void actionPerformed(ActionEvent e) {
                 //changes screen to Account Screen
                 CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+                account_panel.takeSecurityMeaures();
                 cardLayout.show(cardHolder, "AccountScreen");
             }
         };
@@ -1353,11 +1408,11 @@ public class Main {
         };
 
         //adds confirm button
-        JButton confirm_bt_bs = new JButton("Confirm");
+      /*  JButton confirm_bt_bs = new JButton("Confirm");
         confirm_bt_bs.setBounds(510, 680, 150, 75);
         confirm_bt_bs.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         basket_panel.add(confirm_bt_bs);
-
+*/
         //Action listener for back button
         ActionListener confirm_pressed2 = new ActionListener() {
             @Override
@@ -1417,9 +1472,9 @@ public class Main {
 
 
         //Creates promote panel
-        JPanel promote_panel = new JPanel(null);
+         promote_panel = new PromotePanel("PromoteScreen", cardHolder, frame);
 
-        //adds a title in the centre at the top in bold font size 40
+      /*  //adds a title in the centre at the top in bold font size 40
         JLabel title_pr = new JLabel("Promote/Demote");
         title_pr.setBounds(480, 25, 600, 45);
         title_pr.setFont(new Font("Times New Roman", Font.BOLD, 40));
@@ -1441,15 +1496,14 @@ public class Main {
             }
         };
 
-
-
+*/
 
 
         //Creates order detail panel
-        JPanel orderDetail_panel = new JPanel(null);
-
+//        JPanel orderDetail_panel = new JPanel(null);
+        OrderDetailPanel orderDetail_panel =new OrderDetailPanel("OrderDetailScreen", cardHolder, frame);
         //adds a title in the centre at the top in bold font size 40
-        JLabel title_od = new JLabel("Order Details");
+      /*  JLabel title_od = new JLabel("Order Details");
         title_od.setBounds(480, 25, 600, 45);
         title_od.setFont(new Font("Times New Roman", Font.BOLD, 40));
         orderDetail_panel.add(title_od);
@@ -1472,12 +1526,12 @@ public class Main {
 
         // Initialize the table model
         DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("email");
+       *//* model.addColumn("email");
         model.addColumn("Order ID");
         model.addColumn("Product Code");
         model.addColumn("Order Date");
         // Add table
-        model = new DefaultTableModel();
+        model = new DefaultTableModel(); *//*
         model.addColumn("email");
         model.addColumn("Order Number");
         model.addColumn("Product Code");
@@ -1550,7 +1604,7 @@ public class Main {
 // ... Configure the back button, etc. ...
 
 // Add orderDetail_panel to cardHolder
-        cardHolder.add(orderDetail_panel, "OrderDetailScreen");
+        cardHolder.add(orderDetail_panel, "OrderDetailScreen");*/
 
 
 
@@ -1567,7 +1621,7 @@ public class Main {
         cardHolder.add(customerInfo_panel, "CustomerInfoScreen");
         cardHolder.add(basket_panel, "BasketScreen");
         // Add the basketPanel to the card layout container
-        cardHolder.add(basketPanel, "BasketPanel");
+//        cardHolder.add(basketPanel, "BasketPanel");
         cardHolder.add(confirm_panel, "ConfirmScreen");
         cardHolder.add(promote_panel, "PromoteScreen");
         cardHolder.add(orderDetail_panel, "OrderDetailScreen");
@@ -1585,51 +1639,53 @@ public class Main {
         logout_bt1.addActionListener(logout_pressed1);
         logout_bt2.addActionListener(logout_pressed2);
         account_bt.addActionListener(account_pressed);
-        back_bt2.addActionListener(back_pressed2);
-        back_bt3.addActionListener(back_pressed3);
-        pHistory_bt.addActionListener(pHistory_pressed);
+       // back_bt2.addActionListener(back_pressed2);
+       /* back_bt3.addActionListener(back_pressed3);*/
+      //  pHistory_bt.addActionListener(pHistory_pressed);
         /*signUp_bt.addActionListener(signUp_pressed);*/
-        back_bt4.addActionListener(back_pressed4);
-        bDetails_bt.addActionListener(bDetails_pressed);
-        back_bt5.addActionListener(back_pressed5);
-        eDetails_bt.addActionListener(eDetails_pressed);
-        confirm_bt_ed.addActionListener(confirm_pressed);
+//        back_bt4.addActionListener(back_pressed4);
+      //  bDetails_bt.addActionListener(bDetails_pressed);
+     /*   back_bt5.addActionListener(back_pressed5);*/
+      //  eDetails_bt.addActionListener(eDetails_pressed);
+//        confirm_bt_ed.addActionListener(confirm_pressed);
         back_bt6.addActionListener(back_pressed6);
-        staff_bt.addActionListener((staff_pressed));
+     //   staff_bt.addActionListener((staff_pressed));
         cInfo_bt.addActionListener((cInfo_pressed));
         back_bt7.addActionListener(back_pressed7);
-        addInfo_bt.addActionListener(addInfo_pressed);
+//        addInfo_bt.addActionListener(addInfo_pressed);
         search_bt.addActionListener(search_pressed);
         back_bt8.addActionListener(back_pressed8);
         viewBasket_bt.addActionListener(viewBasket_pressed);
         back_bt9.addActionListener(back_pressed9);
-        confirm_bt_bs.addActionListener(confirm_pressed2);
+//        confirm_bt_bs.addActionListener(confirm_pressed2);
         promote_bt.addActionListener(promote_pressed);
-        back_bt10.addActionListener(back_pressed10);
+//        back_bt10.addActionListener(back_pressed10);
         oDetail_bt.addActionListener(oDetail_pressed);
-        back_bt11.addActionListener(back_pressed11);
-        confirm_bt_bd.addActionListener(confirm_pressed3);
+        /*back_bt11.addActionListener(back_pressed11);*/
+//        confirm_bt_bd.addActionListener(confirm_pressed3);
 
         //required stuff
         frame.add(cardHolder);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-//        cardLayout.show(cardHolder, "LoginScreen");
+
+//        cardLayout.show(cardHolder, "BankDetailsScreen");
+        cardLayout.show(cardHolder, "LoginScreen");
 
     }
 
-    private static Order createOrderFromTableModel(DefaultTableModel basketTableModel) {
+    /*private static Order createOrderFromTableModel(DefaultTableModel basketTableModel) {
         Vector<Vector> dataVector = basketTableModel.getDataVector();
         Order order=new Order();
         User user =UserSession.getCurrentUser();
         order.setUser(user);
         order.setOrderDate(new Date());
         for (Vector<Object> rowData : dataVector) {
-            /*String productCode,
+            *//*String productCode,
             ProductType productType,
             int quantity,
-            float productPrice*/
+            float productPrice*//*
 //            order.addOrderLine(dataVector.get(3),  );
             // Print or process the rowData as needed
             String productCode= (String) rowData.get(0);
@@ -1640,7 +1696,7 @@ public class Main {
             System.out.println("Row: " + rowData);
         }
         return order;
-    }
+    }*/
 
 
     // the method to Update changes
@@ -1769,6 +1825,18 @@ public class Main {
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error deleting product.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public static void updateAccountPanelForSecurity() {
+        if(account_panel!=null){
+            account_panel.takeSecurityMeaures();
+        }
+    }
+
+    public static void updatePromotePanelForSecurity() {
+        if(promote_panel!=null){
+            promote_panel.takeSecurityMeaures();
         }
     }
 }

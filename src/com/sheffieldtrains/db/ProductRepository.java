@@ -117,7 +117,7 @@ public class ProductRepository extends Repository {
                     tp.quantity
                 FROM
                     team066.TrainSet ts
-                JOIN    team066.Trackpackintrainset tp ON ts.productCode=tp.tsProductCode
+                JOIN    team066.TrackPackInTrainSet tp ON ts.productCode=tp.tsProductCode
                 ORDER BY ts.productCode
             """;
 
@@ -147,7 +147,7 @@ public class ProductRepository extends Repository {
                     rsts.rsProductCode AS rollingStockProductCode,
                     rsts.quantity    AS rollingStockQuantitiy
                 FROM
-                        team066.Trainset ts
+                        team066.TrainSet ts
                 JOIN    team066.Product p       ON ts.productCode=p.productCode
                 JOIN    team066.Controller c    ON c.productCode=ts.controllerProductCode
                 JOIN    team066.RollingStockInTrainSet rsts ON ts.productCode=rsts.tsProductCode
@@ -216,13 +216,21 @@ public class ProductRepository extends Repository {
     public static void  loadAllProducts() {
         try {
             loadLocomotives();
+            System.out.println("loadLocomotives successful");
             loadControllers();
+            System.out.println("loadControllers successful");
             loadTracks();
+            System.out.println("loadTracks successful");
             loadRollingStocks();
+            System.out.println("loadRollingStocks successful");
             loadTrackPacks();
+            System.out.println("loadTrackPacks successful");
             loadLocomotiveInTrainSet();
+            System.out.println("loadLocomotiveInTrainSet successful");
             loadTrackPacksInTrainSet();
+            System.out.println("loadTrackPacksInTrainSet successful");
             loadTrainSets();
+            System.out.println("loadTrainSets successful");
         }
         catch (SQLException ex){
             throw new RuntimeException("Error encountered in loading products");

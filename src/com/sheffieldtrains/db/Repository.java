@@ -7,12 +7,11 @@ public class Repository {
     protected static  Connection connection;
    /* private static String dbURL = "jdbc:mysql://127.0.0.1/team066";
     private static String userName = "root";
-    private static String password = "password";*/
-
+    private static String password = "password";
+*/
     private static String dbURL ="jdbc:mysql://stusql.dcs.shef.ac.uk/team066";
     private static String userName = "team066";
     private static String password = "aNohqu4mo";
-
     public static Connection getConnection(){
         try {
             if (connection!=null&&!connection.isClosed()) {
@@ -20,6 +19,7 @@ public class Repository {
             }
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(dbURL, userName, password);
+            System.out.println("connection established");
         } catch (Exception ex) {
             throw new RuntimeException("Cannot get a db connection");
         }
