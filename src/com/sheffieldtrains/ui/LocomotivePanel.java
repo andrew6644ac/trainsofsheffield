@@ -1,11 +1,9 @@
 package com.sheffieldtrains.ui;
-
-import com.sheffieldtrains.domain.product.DCCCode;
 import com.sheffieldtrains.domain.product.Locomotive;
 import com.sheffieldtrains.service.ProductService;
+import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class LocomotivePanel extends TopUIPanel {
@@ -26,7 +24,15 @@ public class LocomotivePanel extends TopUIPanel {
     }
 
     private void layoutComponents() {
-        // ------locomotive
+        // Create the table model and override the isCellEditable method
+        tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Make the first seven columns non-editable
+                return column >= 8;
+            }
+        };
+
         tableModel.addColumn("Product Code");
         tableModel.addColumn("Brand");
         tableModel.addColumn("Product Name");
@@ -36,9 +42,13 @@ public class LocomotivePanel extends TopUIPanel {
         tableModel.addColumn("EraCode");
         tableModel.addColumn("DccCode");
         tableModel.addColumn("Add to Basket");
+
+        // Create the table with the custom model
+        table = new JTable(tableModel);
+        table.getTableHeader().setReorderingAllowed(false);
+
         List<Locomotive> locomotiveList= ProductService.getAllLocomotives();
         String[] rowData=new String[tableModel.getColumnCount()];
-        //int columnCount=0;
         for(Locomotive loc: locomotiveList){
             rowData[0]=loc.getProductCode();
             rowData[1]=loc.getBrand();
@@ -51,17 +61,6 @@ public class LocomotivePanel extends TopUIPanel {
             rowData[8]="Add to Basket";
             tableModel.addRow(rowData);
         }
-// 添加示例数据，这里您可以连接数据库并加载真实数据
-  /*      tableModel.addRow(new Object[]{"L001", "Hornby", "Class A3 \"Flying Scotsman\"","Locomotive", "199.99", "OO_GAUGE", "5", "Add to Basket"});
-        tableModel.addRow(new Object[]{"L002", "Hornby", "Class A4 \"Mallard\"","Locomotive",  "220.99", "OO_GAUGE","7", "Add to Basket"});*/
-       /* JPanel locomotivePanel = new JPanel(new BorderLayout());
-        JScrollPane scrollPane = new JScrollPane(table);
-        locomotivePanel.add(scrollPane, BorderLayout.CENTER);
-        locomotivePanel.add(Main.createBackButton("MenuScreen"), BorderLayout.SOUTH);*/
-//        parentParentPanel.add(locomotivePanel, "LocomotivePanel");
-
-        // The ButtonColumn needs to know which table model is the basket model, so it can add rows to it
-        /*ButtonColumn addButtonColumn = new ButtonColumn(table, 7, basketTableModel, false,false,false);*/
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
         add(Main.createBackButton("MenuScreen"), BorderLayout.SOUTH);

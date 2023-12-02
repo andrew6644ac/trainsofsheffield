@@ -46,6 +46,17 @@ public class OrderHisotryPanel extends TopUIPanel {
         };
         back_bt3.addActionListener(back_pressed3);
 
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.setBounds(400, 620, 150, 30); // 调整位置和大小
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                reloadOrderHistory();
+            }
+        });
+        add(refreshButton);
+
+
         tableModel.addColumn("Order Number");
         tableModel.addColumn("Order Date");
         tableModel.addColumn("Order Status");
@@ -81,4 +92,10 @@ public class OrderHisotryPanel extends TopUIPanel {
 //            table.repaint();
         }
     }
+    private void reloadOrderHistory() {
+        tableModel.setRowCount(0); // 清空表格
+        populateTableWithOrderHistoryData(); // 重新加载订单历史数据
+    }
+
+
 }

@@ -54,37 +54,22 @@ public class PromotePanel extends TopUIPanel {
         promoteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedRow = table.getSelectedRow();
-                    if (selectedRow != -1) { // Check if any row is selected
-                        String email = (String) tableModel.getValueAt(selectedRow, 2); // Assuming first column contains item name
-                        User user=UserService.getUser(email);
-                        if (UserSession.getCurrentUser().isManager()) {
-                            if (!user.isStaff()) {
-                                UserService.promoteToStaff(user);
-                                tableModel.setValueAt("true", selectedRow, 3);
-                                // Notify the table that the data has changed
-                                tableModel.fireTableRowsUpdated(selectedRow, selectedRow);
-                           /* tableModel.removeRow(selectedRow);
-                            table.revalidate();
-                            table.repaint();*/
-                            } else {
-                                JOptionPane.showMessageDialog(
-                                        null, // Parent component (null for centering on the screen)
-                                        "User is already staff", // Message
-                                        "Error", // Title
-                                        JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
-                        else {
-                            JOptionPane.showMessageDialog(
-                                    null, // Parent component (null for centering on the screen)
-                                    "Only Managers Can Promote/Demote A User", // Message
-                                    "Error", // Title
-                                    JOptionPane.ERROR_MESSAGE);
-
-                        }
-                    }
+                // 权限检查：只有管理者才能使用此功能
+                if (UserSession.getCurrentUser().isManager()) {
+                    // 打开搜索和提升的子面板
+                    JDialog searchDialog = new JDialog(topFrame, "Search and Promote User", true);
+                    SearchAndPromotePanel searchPanel = new SearchAndPromotePanel(searchDialog);
+                    searchDialog.add(searchPanel);
+                    searchDialog.setSize(400, 200);
+                    searchDialog.setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(
+                            null, // Parent component (null for centering on the screen)
+                            "Only Managers Can Promote/Demote A User", // Message
+                            "Error", // Title
+                            JOptionPane.ERROR_MESSAGE);
                 }
+            }
         });
 
          demoteButton = new JButton("Demote");
@@ -123,6 +108,16 @@ public class PromotePanel extends TopUIPanel {
                 }
             }
         });
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.setBounds(1025, 295, 150, 75);
+        refreshButton.setFont(new Font("Times New Roman", Font.PLAIN, 25));
+        add(refreshButton);
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                refreshUserTable(); // 调用刷新表格的方法
+            }
+        });
 
         tableModel.addColumn("User ID");
         tableModel.addColumn("User Name");
@@ -156,6 +151,84 @@ public class PromotePanel extends TopUIPanel {
         }
         demoteButton.setVisible(shouldPromoteButtonVisible);
         promoteButton.setVisible(shouldPromoteButtonVisible);
+    }
+
+    class SearchAndPromotePanel extends JPanel {
+        private JTextField emailField;
+        private JButton searchButton;
+        private JButton confirmButton;
+        private JLabel statusLabel;
+        private JDialog parentDialog;
+
+        public SearchAndPromotePanel(JDialog parentDialog) {
+            this.parentDialog = parentDialog;
+            setLayout(new FlowLayout());
+            emailField = new JTextField(20);
+            add(emailField);
+
+            searchButton = new JButton("Search");
+            add(searchButton);
+
+            confirmButton = new JButton("Confirm");
+            confirmButton.setEnabled(false); // 初始时禁用确认按钮
+            add(confirmButton);
+
+            statusLabel = new JLabel(" ");
+            add(statusLabel);
+
+            searchButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String email = emailField.getText();
+                    // 执行数据库搜索
+                    User user = searchUserByEmail(email);
+                    if (user != null) {
+                        if (!user.isStaff()) {
+                            statusLabel.setText("User found. Ready to promote.");
+                            confirmButton.setEnabled(true);
+                        } else {
+                            statusLabel.setText("User is already a staff.");
+                        }
+                    } else {
+                        statusLabel.setText("User not found.");
+                    }
+                }
+            });
+
+            confirmButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String email = emailField.getText();
+                    // 执行提升操作
+                    User user = UserService.getUser(email);
+                    if (user != null && !user.isStaff()) {
+                        UserService.promoteToStaff(user);
+                        JOptionPane.showMessageDialog(SearchAndPromotePanel.this, "User promoted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        parentDialog.dispose();
+                    }
+                }
+            });
+        }
+
+        private User searchUserByEmail(String email) {
+            // 这里应该实现数据库查询用户的逻辑
+            // 假设 UserService 有一个根据电子邮箱获取用户的方法
+            return UserService.getUser(email);
+        }
+
+    }
+    private void refreshUserTable() {
+        tableModel.setRowCount(0); // 清除表格现有数据
+        List<User> users = UserService.getAllUsers(); // 重新获取所有用户数据
+        for (User user : users) {
+            String[] rowData = {
+                    "" + user.getUserId(),
+                    user.getForename() + " " + user.getSurname(),
+                    user.getEmail(),
+                    "" + user.isStaff()
+            };
+            tableModel.addRow(rowData);
+        }
     }
 }
 
