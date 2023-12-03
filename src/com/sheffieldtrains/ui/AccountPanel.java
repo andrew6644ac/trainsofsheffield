@@ -24,7 +24,7 @@ public class AccountPanel extends TopUIPanel {
     }
 
     private void layoutComponents() {
-        JLabel title_ac = new JLabel("Account Area");
+        JLabel title_ac = new JLabel("Admin Area");
         title_ac.setBounds(540, 25, 600, 45);
         title_ac.setFont(new Font("Times New Roman", Font.BOLD, 40));
         add(title_ac);
