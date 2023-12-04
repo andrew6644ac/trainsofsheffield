@@ -25,14 +25,14 @@ import javax.swing.JFrame;
 import javax.swing.table.*;
 
 class ButtonColumn extends AbstractCellEditor implements TableCellRenderer, TableCellEditor, ActionListener {
-    private JTable table;
-    private JButton renderButton;
-    private JButton editButton;
+    private final JTable table;
+    private final JButton renderButton;
+    private final JButton editButton;
     private String text;
-    private DefaultTableModel basketModel;
-    private boolean isDeleteButton;
-    private boolean isAddButton;
-    private boolean isRemoveButton;
+    private final DefaultTableModel basketModel;
+    private final boolean isDeleteButton;
+    private final boolean isAddButton;
+    private final boolean isRemoveButton;
 
     public ButtonColumn(JTable table, int column, DefaultTableModel basketModel,
                         boolean isDeleteButton, boolean isAddButton, boolean isRemoveButton) {
@@ -122,8 +122,8 @@ class ButtonColumn extends AbstractCellEditor implements TableCellRenderer, Tabl
 
 public class Main {
     // Class-level variables for card layout
-    private static JPanel cardHolder = new JPanel(new CardLayout());
-    private static CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
+    private static final JPanel cardHolder = new JPanel(new CardLayout());
+    private static final CardLayout cardLayout = (CardLayout) cardHolder.getLayout();
 
    /* private static DefaultTableModel tableModel = new DefaultTableModel();
     private static JTable table = new JTable(tableModel);*/
@@ -369,7 +369,7 @@ public class Main {
         };
 
         //adds account button
-        JButton account_bt = new JButton("Admin");
+        JButton account_bt = new JButton("Account");
         account_bt.setBounds(25, 10, 150, 75);
         account_bt.setFont(new Font("Times New Roman", Font.PLAIN, 25));
         menu_panel.add(account_bt);
