@@ -252,6 +252,21 @@ public class OrderRepository extends Repository {
         return orders;
     }
 
+    public static List<Order> getAllOrders()  {
+        ResultSet resultSet =null;
+        String whereClause=" ";
+        List<Order> orders=new ArrayList<>();
+        String sqlString = ALL_ORDER_SQL.replace(queryClausePlaceHolder, whereClause);
+        try (PreparedStatement stmt = getConnection().prepareStatement(sqlString)) {
+            resultSet = stmt.executeQuery();
+            orders = buildOrderList(resultSet);
+        }
+        catch (SQLException ex) {
+            new RuntimeException("Database errors when trying to get all pending orders" );
+        }
+        return orders;
+    }
+
     public static void deleteOrderByUserId(Integer userId) {
         if (userId==null){
             throw new UnknownUserException("UserId is null or empty.");

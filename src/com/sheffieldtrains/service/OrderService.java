@@ -146,4 +146,8 @@ public class OrderService {
     public void deleteOrderByOrderId(Long orderId){
         OrderRepository.deleteOrderByOrderId(orderId);
     }
+
+    public static List<Order> getAllOrders() {
+        return OrderRepository.getAllOrders();
+    }
 }
